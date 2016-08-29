@@ -1,8 +1,8 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Web.Lightning where
 
-import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Free
 
@@ -13,7 +13,6 @@ import Web.Lightning.Types.Lightning
 import Web.Lightning.Types.Error
 
 import Network.HTTP.Client
-import Network.HTTP.Client.TLS
 import Network.HTTP.Types
 
 import Network.API.Builder as API
@@ -63,7 +62,7 @@ handleReceive r lstate = do
   return res
 
 builderFromState :: LightningState -> Builder
-
+builderFromState _ = Builder "LightningViz" "http://localhost:3000" id id
 
 dropResume :: Either (APIError LightningError, Maybe (LightningT m a)) a -> Either (APIError LightningError) a
 dropResume (Left (x, _)) = Left x
