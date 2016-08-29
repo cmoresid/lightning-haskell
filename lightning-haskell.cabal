@@ -1,0 +1,56 @@
+name:                lightning-haskell
+version:             0.1.0.0
+synopsis:            Bindings to lightning-viz REST API
+description:         Please see README.md
+homepage:            https://github.com/cmoresid/lightning-haskell#readme
+license:             BSD3
+license-file:        LICENSE
+author:              Connor Moreside
+maintainer:          connor@moresi.de
+copyright:           2016 Connor Moreside
+category:            Web
+build-type:          Simple
+-- extra-source-files:
+cabal-version:       >=1.10
+
+library
+  hs-source-dirs:      src
+  exposed-modules:     Web.Lightning
+                     , Web.Lightning.Types.Line
+                     , Web.Lightning.Types.Lightning
+                     , Web.Lightning.Types.Error
+  build-depends:       base >= 4.7 && < 5
+                     , aeson
+                     , bytestring
+                     , data-default-class
+                     , free
+                     , http-client
+                     , http-client-tls
+                     , http-types
+                     , network
+                     , text
+                     , transformers
+                     , unordered-containers
+                     , vector
+                     , api-builder
+  ghc-options:         -Wall
+  default-language:    Haskell2010
+
+test-suite lightning-haskell-test
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Spec.hs
+  build-depends:       base
+                     , lightning-haskell
+                     , aeson
+                     , api-builder
+                     , bytestring
+                     , hspec
+                     , text
+                     , transformers
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  default-language:    Haskell2010
+
+source-repository head
+  type:     git
+  location: https://github.com/cmoresid/lightning-haskell
