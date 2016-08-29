@@ -31,8 +31,10 @@ instance FromJSON Session where
 instance Receivable Session where
   receive = useFromJSON
 
-createSessionRoute :: Route
-createSessionRoute = Route ["sessions"] [] "POST"
+createSessionRoute :: T.Text -> Route
+createSessionRoute n = Route ["sessions"]
+                             ["name" =. n]
+                             "POST"
 
-createSession :: Monad m => LightningT m Session
-createSession = receiveRoute createSessionRoute
+createSession :: Monad m => T.Text -> LightningT m Session
+createSession n = receiveRoute $ createSessionRoute n
