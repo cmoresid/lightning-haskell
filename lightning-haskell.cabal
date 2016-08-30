@@ -19,6 +19,7 @@ library
                      , Web.Lightning.Types.Line
                      , Web.Lightning.Types.Lightning
                      , Web.Lightning.Types.Error
+                     , Web.Lightning.Types.Visualization
   build-depends:       base >= 4.7 && < 5
                      , aeson
                      , bytestring

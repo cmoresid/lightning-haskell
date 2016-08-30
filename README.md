@@ -1,4 +1,4 @@
-# lightning-haskell
+# lightning-haskell  
 
 [![Build Status](https://travis-ci.org/cmoresid/lightning-haskell.svg?branch=master)](https://travis-ci.org/cmoresid/lightning-haskell)   
 
