@@ -1,21 +1,21 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Web.Lightning where
 
-import Control.Monad.IO.Class
-import Control.Monad.Trans.Free
+import           Control.Monad.IO.Class
+import           Control.Monad.Trans.Free
 
-import Data.Default.Class
-import qualified Data.Text as T
+import           Data.Default.Class
+import qualified Data.Text                     as T
 
-import Web.Lightning.Types.Lightning
-import Web.Lightning.Types.Error
+import           Web.Lightning.Types.Error
+import           Web.Lightning.Types.Lightning
 
-import Network.HTTP.Client
-import Network.HTTP.Types
+import           Network.HTTP.Client
+import           Network.HTTP.Types
 
-import Network.API.Builder as API
+import           Network.API.Builder           as API
 
 data LoginMethod = Anonymous
                  | Credentials T.Text T.Text
@@ -26,7 +26,7 @@ instance Default LoginMethod where
 
 data LightningOptions =
   LightningOptions { connectionManager :: Maybe Manager
-                   , loginMethod :: LoginMethod }
+                   , loginMethod       :: LoginMethod }
 
 instance Default LightningOptions where
   def = LightningOptions Nothing Anonymous
@@ -37,7 +37,9 @@ defaultLightningOptions = def
 --runLightningWith :: MonadIO m => LightningOptions -> LightningT m a -> m (Either (APIError LightningError) a)
 --runLightningWith opts lightning = liftM dropResume
 
-interpretIO :: MonadIO m => LightningState -> LightningT m a -> m (Either (APIError LightningError, Maybe (LightningT m a)) a)
+interpretIO :: MonadIO m => LightningState
+                -> LightningT m a
+                -> m (Either (APIError LightningError, Maybe (LightningT m a)) a)
 interpretIO lstate (LightningT r) =
   runFreeT r >>= \case
     Pure x -> return $ Right x
@@ -55,7 +57,9 @@ interpretIO lstate (LightningT r) =
         Left err -> return $ Left (err, Just $ LightningT $ wrap $ ReceiveRoute route n)
         Right x -> interpretIO lstate $ LightningT $ n x
 
-handleReceive :: (MonadIO m, Receivable a) => Route -> LightningState -> m (Either (APIError LightningError) a)
+handleReceive :: (MonadIO m, Receivable a) => Route
+                    -> LightningState
+                    -> m (Either (APIError LightningError) a)
 handleReceive r lstate = do
   (res, _, _) <- runAPI (builderFromState lstate) (connMgr lstate) () $
     API.runRoute r
@@ -64,14 +68,15 @@ handleReceive r lstate = do
 builderFromState :: LightningState -> Builder
 builderFromState _ = Builder "LightningViz" "http://localhost:3000" id id
 
-dropResume :: Either (APIError LightningError, Maybe (LightningT m a)) a -> Either (APIError LightningError) a
+dropResume :: Either (APIError LightningError, Maybe (LightningT m a)) a
+                    -> Either (APIError LightningError) a
 dropResume (Left (x, _)) = Left x
 dropResume (Right x) = Right x
 
 data LightningState =
   LightningState { currentBaseURL :: T.Text
-                 , connMgr :: Manager
-                 , sessionID :: T.Text
+                 , connMgr        :: Manager
+                 , sessionID      :: T.Text
                  }
 
 addHeaders :: [Header] -> Request -> Request
