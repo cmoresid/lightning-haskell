@@ -8,26 +8,25 @@ module Web.Lightning.Types.Line
 import           Data.Aeson
 import           Data.Default.Class
 import qualified Data.Text          as T
+import Web.Lightning.Utilities
 
 data LinePlot =
   LinePlot { series :: [[Double]]
-           , label  :: [Int]
-           , size   :: [Double]
-           , alpha  :: [Double]
-           , xaxis  :: T.Text
-           , yaxis  :: T.Text }
+           , index :: Maybe [Int]
+           , thickness :: Maybe [Int]
+           , xaxis :: Maybe T.Text
+           , yaxis :: Maybe T.Text }
   deriving (Show, Eq)
 
 instance Default LinePlot where
-  def = LinePlot [[]] [] [] [] "" ""
+  def = LinePlot [[]] Nothing Nothing Nothing Nothing
 
 instance ToJSON LinePlot where
-  toJSON linePlot = object
+  toJSON linePlot = omitNulls
     [
       "series" .= series linePlot
-    , "label" .= label linePlot
-    , "size" .= size linePlot
-    , "alpha" .= alpha linePlot
+    , "index" .= index linePlot
+    , "thickness" .= thickness linePlot
     , "xaxis" .= xaxis linePlot
     , "yaxis" .= yaxis linePlot
     ]

@@ -16,10 +16,16 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Web.Lightning
+                     , Web.Lightning.Session
+                     , Web.Lightning.Types
                      , Web.Lightning.Types.Line
                      , Web.Lightning.Types.Lightning
                      , Web.Lightning.Types.Error
                      , Web.Lightning.Types.Visualization
+                     , Web.Lightning.Actions
+  other-modules:       Web.Lightning.Routes
+                     , Web.Lightning.Types.Session
+                     , Web.Lightning.Utilities
   build-depends:       base >= 4.7 && < 5
                      , aeson
                      , bytestring
