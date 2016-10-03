@@ -2,7 +2,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Web.Lightning.Session
-  ( createSession ) where
+  ( createSession
+  , module Web.Lightning.Types.Session) where
 
 import qualified Data.Text as T
 
