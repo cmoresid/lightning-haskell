@@ -1,12 +1,24 @@
 {-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Web.Lightning where
+module Web.Lightning
+  ( LoginMethod(..)
+  , LightningOptions(..)
+  , LightningState(..)
+  , runLightning
+  , runLightningAnon
+  , runLightningWith
+  , runResumeLightningtWith
+  -- * Re-export the following modules
+  , APIError(..)
+  , module Web.Lightning.Types.Error
+  , module Web.Lightning.Types.Lightning
+  ) where
 
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans.Free
 
-import Data.Aeson
+import           Data.Aeson
 import           Data.Default.Class
 import qualified Data.Text                     as T
 
@@ -15,7 +27,6 @@ import           Web.Lightning.Types.Lightning
 import           Web.Lightning.Utilities
 
 import           Network.HTTP.Client
-import           Network.HTTP.Types
 import           Network.HTTP.Client.TLS
 
 import           Network.API.Builder           as API
@@ -37,6 +48,11 @@ instance Default LightningOptions where
 
 runLightningAnon :: MonadIO m => LightningT m a -> m (Either (APIError LightningError) a)
 runLightningAnon = runLightningWith def
+
+runLightning :: MonadIO m => Maybe T.Text ->
+                             LightningT m a ->
+                             m (Either (APIError LightningError) a)
+runLightning s = runLightningWith def { sessionId = s }
 
 runLightningWith :: MonadIO m => LightningOptions
                      -> LightningT m a -> m (Either (APIError LightningError) a)
@@ -72,7 +88,7 @@ runResumeLightningtWith :: MonadIO m => LightningOptions
                             -> m (Either (APIError LightningError, Maybe (LightningT m a)) a)
 runResumeLightningtWith (LightningOptions cm hu lm s) lightning = do
   manager <- case cm of
-    Just m -> return m
+    Just m  -> return m
     Nothing -> liftIO $ newManager tlsManagerSettings
   loginCreds <- case lm of
     Anonymous -> return $ Right Nothing
@@ -107,13 +123,10 @@ builderFromState (LightningState hurl _ Nothing) =
 dropResume :: Either (APIError LightningError, Maybe (LightningT m a)) a
                     -> Either (APIError LightningError) a
 dropResume (Left (x, _)) = Left x
-dropResume (Right x) = Right x
+dropResume (Right x)     = Right x
 
 data LightningState =
   LightningState { currentBaseURL :: T.Text
                  , connMgr        :: Manager
                  , _sessionId     :: Maybe T.Text
                  }
-
-addHeaders :: [Header] -> Request -> Request
-addHeaders xs req = req { requestHeaders = requestHeaders req ++ xs }
