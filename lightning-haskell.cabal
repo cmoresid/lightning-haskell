@@ -29,6 +29,10 @@ library
                      , Web.Lightning.Plots.Scatter
                      , Web.Lightning.Plots.Matrix
                      , Web.Lightning.Plots.Adjacency
+                     , Web.Lightning.Plots.Map
+                     , Web.Lightning.Plots.Graph
+                     , Web.Lightning.Plots.GraphBundled
+                     , Web.Lightning.Plots.Scatter3
                      , Web.Lightning.Types.Session
                      , Web.Lightning.Utilities
   build-depends:       base >= 4.7 && < 5

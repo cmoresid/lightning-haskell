@@ -20,7 +20,7 @@ import           Web.Lightning.Types.Lightning     (LightningT, sendPlot)
 import           Web.Lightning.Types.Visualization (Visualization (..))
 
 data LinePlot =
-  LinePlot { lpSeries    :: [[Double]]
+  LinePlot { lpSeries    :: Maybe [[Double]]
            , lpIndex     :: Maybe [Int]
            , lpThickness :: Maybe [Int]
            , lpXaxis     :: Maybe T.Text
@@ -28,7 +28,7 @@ data LinePlot =
   deriving (Show, Eq)
 
 instance Default LinePlot where
-  def = LinePlot [[]] Nothing Nothing Nothing Nothing
+  def = LinePlot Nothing Nothing Nothing Nothing Nothing
 
 $(deriveToJSON defaultOptions { omitNothingFields = True} ''LinePlot)
 

@@ -18,17 +18,16 @@ import qualified Data.Text                         as T
 import qualified Web.Lightning.Routes              as R
 import           Web.Lightning.Types.Lightning     (LightningT, sendPlot)
 import           Web.Lightning.Types.Visualization (Visualization (..))
+import           Web.Lightning.Utilities
 
 data ForcePlot =
-  ForcePlot { fpConn     :: Maybe [[Double]]
-            , fpLabel    :: Maybe [Int]
-            , fpValue    :: Maybe [Double]
-            , fpColorMap :: Maybe T.Text
-            , fpSize     :: Maybe [Double] }
+  ForcePlot { fpConn     :: [[Double]]
+            , fpGroup    :: [Int]
+            , fpLabel    :: [T.Text] }
   deriving (Show, Eq)
 
 instance Default ForcePlot where
-  def = ForcePlot Nothing Nothing Nothing Nothing Nothing
+  def = ForcePlot [[]] [] []
 
 $(deriveToJSON defaultOptions { omitNothingFields = True} ''ForcePlot)
 
@@ -36,4 +35,11 @@ defForcePlot :: ForcePlot
 defForcePlot = def :: ForcePlot
 
 forcePlot :: Monad m => ForcePlot -> LightningT m Visualization
-forcePlot forcePlt = sendPlot "force" forcePlt R.plot
+forcePlot forcePlt = sendPlot "force" (transformData forcePlt) R.plot
+
+transformData :: ForcePlot -> Value
+transformData (ForcePlot conn g ls) =
+  omitNulls [ "links"  .= getLinks conn
+            , "nodes"  .= getNodes conn
+            , "labels" .= ls
+            , "group"  .= g ]
