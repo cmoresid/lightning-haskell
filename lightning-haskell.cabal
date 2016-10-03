@@ -26,6 +26,7 @@ library
                      , Web.Lightning.Plots.Line
                      , Web.Lightning.Plots.ScatterLine
                      , Web.Lightning.Plots.Force
+                     , Web.Lightning.Plots.Scatter
                      , Web.Lightning.Types.Session
                      , Web.Lightning.Utilities
   build-depends:       base >= 4.7 && < 5
