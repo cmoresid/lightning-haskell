@@ -25,6 +25,7 @@ library
   other-modules:       Web.Lightning.Routes
                      , Web.Lightning.Plots.Line
                      , Web.Lightning.Plots.ScatterLine
+                     , Web.Lightning.Plots.Force
                      , Web.Lightning.Types.Session
                      , Web.Lightning.Utilities
   build-depends:       base >= 4.7 && < 5

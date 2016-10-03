@@ -36,4 +36,4 @@ defScatterLinePlot :: ScatterLinePlot
 defScatterLinePlot = def :: ScatterLinePlot
 
 scatterLinePlot :: Monad m => ScatterLinePlot -> LightningT m Visualization
-scatterLinePlot linePlt = sendPlot "line" linePlt R.plot
+scatterLinePlot linePlt = sendPlot "scatter-line" linePlt R.plot

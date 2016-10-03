@@ -1,7 +1,5 @@
-module Web.Lightning.Plots
-  ( module Web.Lightning.Plots.Line
-  , module Web.Lightning.Plots.ScatterLine
-  ) where
+module Web.Lightning.Plots (module P) where
 
-import Web.Lightning.Plots.Line
-import Web.Lightning.Plots.ScatterLine
+import Web.Lightning.Plots.Line as P
+import Web.Lightning.Plots.ScatterLine as P
+import Web.Lightning.Plots.Force as P

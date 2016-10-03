@@ -20,11 +20,11 @@ import           Web.Lightning.Types.Lightning     (LightningT, sendPlot)
 import           Web.Lightning.Types.Visualization (Visualization (..))
 
 data LinePlot =
-  LinePlot { series    :: [[Double]]
-           , index     :: Maybe [Int]
-           , thickness :: Maybe [Int]
-           , xaxis     :: Maybe T.Text
-           , yaxis     :: Maybe T.Text }
+  LinePlot { lpSeries    :: [[Double]]
+           , lpIndex     :: Maybe [Int]
+           , lpThickness :: Maybe [Int]
+           , lpXaxis     :: Maybe T.Text
+           , lpYaxis     :: Maybe T.Text }
   deriving (Show, Eq)
 
 instance Default LinePlot where
