@@ -1,3 +1,16 @@
+{-|
+Module      : Web.Lightning.Plots
+Description : Re-exports all of the available lightning-viz plots.
+Copyright   : (c) Connor Moreside, 2016
+License     : BSD-3
+Maintainer  : connor@moresi.de
+Stability   : experimental
+Portability : POSIX
+
+This module re-exports all of the available plots so one does
+not need to import each plot individually.
+-}
+
 module Web.Lightning.Plots (module P) where
 
 import Web.Lightning.Plots.Line as P
