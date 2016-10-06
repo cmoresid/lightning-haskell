@@ -1,6 +1,6 @@
 {-|
 Module      : Web.Lightning.Plots
-Description : Re-exports all of the available lightning-viz plots.
+Description : Lightning Plots
 Copyright   : (c) Connor Moreside, 2016
 License     : BSD-3
 Maintainer  : connor@moresi.de
