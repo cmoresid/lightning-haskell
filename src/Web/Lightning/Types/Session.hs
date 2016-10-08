@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 {-|
 Module      : Web.Lightning.Types.Session
@@ -20,7 +20,7 @@ module Web.Lightning.Types.Session
   where
 
 import           Data.Aeson
-import           Data.Aeson.TH
+import           Data.Default.Class
 import qualified Data.Text           as T
 
 import           Network.API.Builder hiding (runRoute)
@@ -28,18 +28,28 @@ import           Network.API.Builder hiding (runRoute)
 -- | Represents a lightning-viz session. A session ID is required to create
 -- a plot.
 data Session =
-  Session { sessionID   :: T.Text
+  Session { snId   :: T.Text
             -- ^ The unique session ID
-          , sessionName :: T.Text
+          , snName :: Maybe T.Text
             -- ^ The optional session name
-          , updatedAt   :: T.Text
+          , snUpdated   :: Maybe T.Text
             -- ^ The timestamp of when the session was last updated
-          , createdAt   :: T.Text
+          , snCreated   :: Maybe T.Text
             -- ^ Creation timestamp
           }
-  deriving (Show, Read, Eq, Ord)
+  deriving (Show, Read, Eq)
 
-$(deriveFromJSON defaultOptions { omitNothingFields = True} ''Session)
+instance FromJSON Session where
+  parseJSON (Object v) =
+    Session <$>
+    v .: "id" <*>
+    v .: "name" <*>
+    v .: "updatedAt" <*>
+    v .: "createdAt"
+  parseJSON _ = mempty
 
 instance Receivable Session where
   receive = useFromJSON
+
+instance Default Session where
+  def = Session "" Nothing Nothing Nothing

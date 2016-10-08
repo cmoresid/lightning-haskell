@@ -24,7 +24,6 @@ library
                      , Web.Lightning.Types.Visualization
   other-modules:       Web.Lightning.Routes
                      , Web.Lightning.Plots.Line
-                     , Web.Lightning.Plots.ScatterLine
                      , Web.Lightning.Plots.Force
                      , Web.Lightning.Plots.Scatter
                      , Web.Lightning.Plots.Matrix

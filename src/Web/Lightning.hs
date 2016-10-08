@@ -6,7 +6,6 @@ module Web.Lightning
   , LightningOptions(..)
   , LightningState(..)
   , runLightning
-  , runLightningAnon
   , runLightningWith
   , runResumeLightningtWith
   -- * Re-export the following modules
@@ -24,6 +23,7 @@ import qualified Data.Text                     as T
 
 import           Web.Lightning.Types.Error
 import           Web.Lightning.Types.Lightning
+import           Web.Lightning.Session
 import           Web.Lightning.Utilities
 
 import           Network.HTTP.Client
@@ -38,21 +38,18 @@ instance Default LoginMethod where
   def = Anonymous
 
 data LightningOptions =
-  LightningOptions { connectionManager :: Maybe Manager
-                   , hostUrl           :: T.Text
-                   , loginMethod       :: LoginMethod
-                   , sessionId         :: Maybe T.Text }
+  LightningOptions { optConnManager   :: Maybe Manager
+                   , optHostUrl       :: T.Text
+                   , optLoginMethod   :: LoginMethod
+                   , optSession       :: Maybe Session }
 
 instance Default LightningOptions where
   def = LightningOptions Nothing defaultBaseURL Anonymous Nothing
 
-runLightningAnon :: MonadIO m => LightningT m a -> m (Either (APIError LightningError) a)
-runLightningAnon = runLightningWith def
-
-runLightning :: MonadIO m => Maybe T.Text ->
+runLightning :: MonadIO m => Maybe Session ->
                              LightningT m a ->
                              m (Either (APIError LightningError) a)
-runLightning s = runLightningWith def { sessionId = s }
+runLightning s = runLightningWith def { optSession = s }
 
 runLightningWith :: MonadIO m => LightningOptions
                      -> LightningT m a -> m (Either (APIError LightningError) a)
@@ -66,7 +63,7 @@ interpretIO lstate (LightningT r) =
   runFreeT r >>= \case
     Pure x -> return $ Right x
     Free (WithBaseURL u x n) ->
-      interpretIO (lstate { currentBaseURL = u }) x >>= \case
+      interpretIO (lstate { stCurrentBaseURL = u }) x >>= \case
         Left (err, Just resume) ->
           return $ Left (err, Just $ resume >>= LightningT . n)
         Left (err, Nothing) -> return $ Left (err, Nothing)
@@ -74,9 +71,9 @@ interpretIO lstate (LightningT r) =
     Free (FailWith x) -> return $ Left (x, Nothing)
     Free (RunRoute route n) ->
       interpretIO lstate $ LightningT $ wrap $ ReceiveRoute route (n . unwrapJSON)
-    Free (SendPlot t obj route n) ->
-      handlePlot route lstate (createPayLoad t obj) >>= \case
-        Left err -> return $ Left (err, Just $ LightningT $ wrap $ SendPlot t obj route n)
+    Free (SendJSON jsonObj route n) ->
+      handleSendJSON route lstate jsonObj >>= \case
+        Left err -> return $ Left (err, Just $ LightningT $ wrap $ SendJSON jsonObj route n)
         Right x -> interpretIO lstate $ LightningT $ n x
     Free (ReceiveRoute route n) ->
       handleReceive route lstate >>= \case
@@ -86,37 +83,41 @@ interpretIO lstate (LightningT r) =
 runResumeLightningtWith :: MonadIO m => LightningOptions
                             -> LightningT m a
                             -> m (Either (APIError LightningError, Maybe (LightningT m a)) a)
-runResumeLightningtWith (LightningOptions cm hu lm s) lightning = do
+runResumeLightningtWith (LightningOptions cm hu _ s) lightning = do
   manager <- case cm of
     Just m  -> return m
     Nothing -> liftIO $ newManager tlsManagerSettings
-  loginCreds <- case lm of
-    Anonymous -> return $ Right Nothing
-  case loginCreds of
+  session <- case s of
+    Just s' -> return $ Right $ Just s'
+    Nothing -> (fmap . fmap) Just $
+      interpretIO (LightningState hu manager Nothing) $ createSession Nothing
+  case session of
     Left (err, _) -> return $ Left (err, Just lightning)
-    Right _ ->
-      interpretIO (LightningState hu manager s) lightning
+    Right s' ->
+      interpretIO (LightningState hu manager s') lightning
 
 handleReceive :: (MonadIO m, Receivable a) => Route
                     -> LightningState
                     -> m (Either (APIError LightningError) a)
 handleReceive r lstate = do
-  (res, _, _) <- runAPI (builderFromState lstate) (connMgr lstate) () $
+  (res, _, _) <- runAPI (builderFromState lstate) (stConnManager lstate) () $
     API.runRoute r
+
   return res
 
-handlePlot :: (MonadIO m, Receivable a) => Route
+handleSendJSON :: (MonadIO m, Receivable a) => Route
                     -> LightningState
                     -> Value
                     -> m (Either (APIError LightningError) a)
-handlePlot r lstate p = do
-  (res, _, _) <- runAPI (builderFromState lstate) (connMgr lstate) () $
+handleSendJSON r lstate p = do
+  (res, _, _) <- runAPI (builderFromState lstate) (stConnManager lstate) () $
     API.sendRoute p r
+
   return res
 
 builderFromState :: LightningState -> Builder
 builderFromState (LightningState hurl _ (Just s)) =
-  Builder "Lightning" (addSessionId hurl s) id id
+  Builder "Lightning" (addSessionId hurl (snId s)) id id
 builderFromState (LightningState hurl _ Nothing) =
   Builder "Lightning" hurl id id
 
@@ -126,7 +127,7 @@ dropResume (Left (x, _)) = Left x
 dropResume (Right x)     = Right x
 
 data LightningState =
-  LightningState { currentBaseURL :: T.Text
-                 , connMgr        :: Manager
-                 , _sessionId     :: Maybe T.Text
+  LightningState { stCurrentBaseURL :: T.Text
+                 , stConnManager    :: Manager
+                 , stSession        :: Maybe Session
                  }

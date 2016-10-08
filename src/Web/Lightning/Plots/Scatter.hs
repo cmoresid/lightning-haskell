@@ -1,54 +1,87 @@
-{-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell #-}
 
+-- | Visualize spatial points as a scatter plot.
 module Web.Lightning.Plots.Scatter
   ( ScatterPlot(..)
   , Visualization (..)
   , scatterPlot
-  , defScatterPlot
-  , module Data.Default.Class
   ) where
 
+--------------------------------------------------------------------------------
 import           Data.Aeson
-import           Data.Aeson.TH
 import           Data.Default.Class
 import qualified Data.Text                         as T
 
 import qualified Web.Lightning.Routes              as R
 import           Web.Lightning.Types.Lightning     (LightningT, sendPlot)
 import           Web.Lightning.Types.Visualization (Visualization (..))
-import           Web.Lightning.Utilities           (omitNulls, getPoints)
+import           Web.Lightning.Utilities           (getPoints, omitNulls)
+--------------------------------------------------------------------------------
 
+-- | Scatter plot parameters
 data ScatterPlot =
   ScatterPlot { spX        :: [Double]
+                -- ^ List of x points.
               , spY        :: [Double]
-              , spLabel    :: Maybe [Int]
+                -- ^ List of y points.
+              , spValues   :: Maybe [Double]
+                -- ^ Values to set node colors via a linear scale.
+              , spLabels   :: Maybe [T.Text]
+                -- ^ List of text labels to set tooltips.
+              , spColor    :: Maybe [Int]
+                -- ^ List of rgb values to set colors.
               , spGroup    :: Maybe [Int]
+                -- ^ List to set colors via groups.
+              , spColorMap :: Maybe T.Text
+                -- ^ Specification of color map; only colorbrewer types supported.
               , spSize     :: Maybe [Double]
+                -- ^ List to set point sizes.
               , spAlpha    :: Maybe [Double]
+                -- ^ List of alpha values to set file and stroke opacity.
               , spXaxis    :: Maybe T.Text
-              , spYaxis    :: Maybe T.Text }
+                -- ^ Label for x-axis.
+              , spYaxis    :: Maybe T.Text
+                -- ^ Label for y-axis.
+              , spToolTips :: Maybe Bool
+                -- ^ Whether or not to display tooltips.
+              , spZoom     :: Maybe Bool
+                -- ^ Whether or not to allow zooming.
+              , spBrush    :: Maybe Bool
+                -- ^ Whether or not to support brushing.
+              }
   deriving (Show, Eq)
 
 instance Default ScatterPlot where
-  def = ScatterPlot [] [] Nothing
-    Nothing Nothing Nothing Nothing Nothing
+  def = ScatterPlot [] [] Nothing Nothing Nothing Nothing Nothing Nothing
+          Nothing Nothing Nothing (Just True) (Just True) (Just True)
 
-$(deriveToJSON defaultOptions { omitNothingFields = True} ''ScatterPlot)
+instance ToJSON ScatterPlot where
+  toJSON (ScatterPlot xs ys vs ls cs gs cm ss as xa ya t z b) =
+    omitNulls [ "points"    .= getPoints xs ys
+              , "values"    .= vs
+              , "labels"    .= ls
+              , "color"     .= cs
+              , "group"     .= gs
+              , "colormap"  .= cm
+              , "size"      .= ss
+              , "alpha"     .= as
+              , "xaxis"     .= xa
+              , "yaxis"     .= ya
+              , "tooltips"  .= t
+              , "zoom"      .= z
+              , "brush"     .= b
+              ]
 
-defScatterPlot :: ScatterPlot
-defScatterPlot = def :: ScatterPlot
-
-scatterPlot :: Monad m => ScatterPlot -> LightningT m Visualization
-scatterPlot scatterPlt = sendPlot "scatter" (transformData scatterPlt) R.plot
-
-transformData :: ScatterPlot -> Value
-transformData (ScatterPlot xs ys l g s a xl yl) =
-  omitNulls [ "points" .= getPoints xs ys
-            , "label" .= l
-            , "group" .= g
-            , "size" .= s
-            , "alpha" .= a
-            , "xaxis" .= xl
-            , "yaxis" .= yl ]
+-- | Submits a request to the specified lightning-viz server to create
+-- a scatter plot.
+--
+-- <http://lightning-viz.org/visualizations/adjacency/ Scatter Visualization>
+scatterPlot :: Monad m => T.Text
+                          -- ^ Base URL for lightning-viz server.
+                       -> ScatterPlot
+                          -- ^ Scatter plot to create.
+                       -> LightningT m Visualization
+                          -- ^ Transformer stack with created visualization.
+scatterPlot bUrl scatterPlt = do
+  viz <- sendPlot "scatter" scatterPlt R.plot
+  return $ viz { vizBaseUrl = Just bUrl }

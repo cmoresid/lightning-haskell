@@ -1,46 +1,31 @@
-{-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell   #-}
 
+-- | Visualize a bundled node-link graph.
 module Web.Lightning.Plots.GraphBundled
-  ( GraphBundledPlot(..)
-  , Visualization (..)
+  (
+    GraphPlot(..)
+  , Visualization(..)
   , graphBundledPlot
-  , defGraphBundledPlot
-  , module Data.Default.Class
-  ) where
+  )
+  where
 
-import           Data.Aeson
-import           Data.Aeson.TH
-import           Data.Default.Class
+--------------------------------------------------------------------------------
+import           Data.Text                         as T
 
 import qualified Web.Lightning.Routes              as R
+import           Web.Lightning.Plots.Graph         (GraphPlot(..))
 import           Web.Lightning.Types.Lightning     (LightningT, sendPlot)
 import           Web.Lightning.Types.Visualization (Visualization (..))
-import           Web.Lightning.Utilities
+--------------------------------------------------------------------------------
 
-data GraphBundledPlot =
-  GraphBundledPlot { gpbX     :: [Double]
-                   , gpbY     :: [Double]
-                   , gpbConn  :: [[Double]]
-                   , gpbSize  :: [Double]
-                   , gpbGroup :: Maybe [Int] }
-  deriving (Show, Eq)
-
-instance Default GraphBundledPlot where
-  def = GraphBundledPlot [] [] [[]] [] Nothing
-
-$(deriveToJSON defaultOptions { omitNothingFields = True} ''GraphBundledPlot)
-
-defGraphBundledPlot :: GraphBundledPlot
-defGraphBundledPlot = def :: GraphBundledPlot
-
-graphBundledPlot :: Monad m => GraphBundledPlot -> LightningT m Visualization
-graphBundledPlot graphBPlt = sendPlot "graph" (transformData graphBPlt) R.plot
-
-transformData :: GraphBundledPlot -> Value
-transformData (GraphBundledPlot xs ys conn s g) =
-  omitNulls [ "links" .= getLinks conn
-            , "nodes" .= getPoints xs ys
-            , "group" .= g
-            , "size"  .= s ]
+-- | Submits a request to the specified lightning-viz server to create a
+-- bundled node-link graph visualization.
+graphBundledPlot :: Monad m => T.Text
+                               -- ^ Base URL for lightning-viz server.
+                            -> GraphPlot
+                               -- ^ Graph plot to create.
+                            -> LightningT m Visualization
+                               -- ^ Transformer stack with created visualization.
+graphBundledPlot bUrl graphPlt = do
+  viz <- sendPlot "graph-bundled" graphPlt R.plot
+  return $ viz { vizBaseUrl = Just bUrl }
