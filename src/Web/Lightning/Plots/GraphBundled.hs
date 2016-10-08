@@ -1,6 +1,5 @@
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell   #-}
 
 module Web.Lightning.Plots.GraphBundled
   ( GraphBundledPlot(..)
@@ -11,7 +10,6 @@ module Web.Lightning.Plots.GraphBundled
   ) where
 
 import           Data.Aeson
-import           Data.Aeson.TH
 import           Data.Default.Class
 
 import qualified Web.Lightning.Routes              as R
@@ -29,8 +27,6 @@ data GraphBundledPlot =
 
 instance Default GraphBundledPlot where
   def = GraphBundledPlot [] [] [[]] [] Nothing
-
-$(deriveToJSON defaultOptions { omitNothingFields = True} ''GraphBundledPlot)
 
 defGraphBundledPlot :: GraphBundledPlot
 defGraphBundledPlot = def :: GraphBundledPlot

@@ -1,6 +1,5 @@
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell #-}
 
 module Web.Lightning.Plots.Scatter
   ( ScatterPlot(..)
@@ -11,7 +10,6 @@ module Web.Lightning.Plots.Scatter
   ) where
 
 import           Data.Aeson
-import           Data.Aeson.TH
 import           Data.Default.Class
 import qualified Data.Text                         as T
 
@@ -34,8 +32,6 @@ data ScatterPlot =
 instance Default ScatterPlot where
   def = ScatterPlot [] [] Nothing
     Nothing Nothing Nothing Nothing Nothing
-
-$(deriveToJSON defaultOptions { omitNothingFields = True} ''ScatterPlot)
 
 defScatterPlot :: ScatterPlot
 defScatterPlot = def :: ScatterPlot

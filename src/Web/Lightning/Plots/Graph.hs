@@ -1,6 +1,5 @@
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell   #-}
 
 module Web.Lightning.Plots.Graph
   ( GraphPlot(..)
@@ -11,7 +10,6 @@ module Web.Lightning.Plots.Graph
   ) where
 
 import           Data.Aeson
-import           Data.Aeson.TH
 import           Data.Default.Class
 
 import qualified Web.Lightning.Routes              as R
@@ -29,8 +27,6 @@ data GraphPlot =
 
 instance Default GraphPlot where
   def = GraphPlot [] [] [[]] [] Nothing
-
-$(deriveToJSON defaultOptions { omitNothingFields = True} ''GraphPlot)
 
 defGraphPlot :: GraphPlot
 defGraphPlot = def :: GraphPlot

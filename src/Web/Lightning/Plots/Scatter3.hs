@@ -1,6 +1,5 @@
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell #-}
 
 module Web.Lightning.Plots.Scatter3
   ( Scatter3Plot(..)
@@ -11,7 +10,6 @@ module Web.Lightning.Plots.Scatter3
   ) where
 
 import           Data.Aeson
-import           Data.Aeson.TH
 import           Data.Default.Class
 
 import qualified Web.Lightning.Routes              as R
@@ -29,8 +27,6 @@ data Scatter3Plot =
 
 instance Default Scatter3Plot where
   def = Scatter3Plot [] [] [] Nothing Nothing
-
-$(deriveToJSON defaultOptions { omitNothingFields = True} ''Scatter3Plot)
 
 defScatter3Plot :: Scatter3Plot
 defScatter3Plot = def :: Scatter3Plot

@@ -1,6 +1,5 @@
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell   #-}
 
 module Web.Lightning.Plots.Matrix
   ( MatrixPlot(..)
@@ -11,13 +10,13 @@ module Web.Lightning.Plots.Matrix
   ) where
 
 import           Data.Aeson
-import           Data.Aeson.TH
 import           Data.Default.Class
 import qualified Data.Text                         as T
 
 import qualified Web.Lightning.Routes              as R
 import           Web.Lightning.Types.Lightning     (LightningT, sendPlot)
 import           Web.Lightning.Types.Visualization (Visualization (..))
+import           Web.Lightning.Utilities
 
 data MatrixPlot =
   MatrixPlot { mpMatrix    :: Maybe [[Double]]
@@ -29,7 +28,14 @@ data MatrixPlot =
 instance Default MatrixPlot where
   def = MatrixPlot Nothing Nothing Nothing Nothing
 
-$(deriveToJSON defaultOptions { omitNothingFields = True} ''MatrixPlot)
+instance ToJSON MatrixPlot where
+  toJSON mp = omitNulls
+    [
+      "matrix" .= mpMatrix mp
+    , "colormap" .= mpColorMap mp
+    , "rowLabels" .= mpRowLabels mp
+    , "colLabels" .= mpColLabels mp
+    ]
 
 defMatrixPlot :: MatrixPlot
 defMatrixPlot = def :: MatrixPlot

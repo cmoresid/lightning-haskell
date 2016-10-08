@@ -37,12 +37,15 @@ data Visualization =
                   -- ^ The unique identifier for a visualization
                 , vizSessionID :: T.Text
                   -- ^ The session ID the visualization was created in
+                , vizBaseUrl   :: Maybe T.Text
+                  -- ^ Base URL gets filled in later
                 } deriving (Show)
 
 instance FromJSON Visualization where
   parseJSON (Object o) =
     Visualization <$> o .: "id"
                   <*> o .: "SessionId"
+                  <*> o .:? "url"
   parseJSON _ = mempty
 
 instance Receivable Visualization where
