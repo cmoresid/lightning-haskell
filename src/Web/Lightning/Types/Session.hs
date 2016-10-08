@@ -19,22 +19,22 @@ module Web.Lightning.Types.Session
   )
   where
 
-import Data.Aeson
-import Data.Aeson.TH
-import qualified Data.Text as T
+import           Data.Aeson
+import           Data.Aeson.TH
+import qualified Data.Text           as T
 
-import Network.API.Builder hiding (runRoute)
+import           Network.API.Builder hiding (runRoute)
 
 -- | Represents a lightning-viz session. A session ID is required to create
 -- a plot.
 data Session =
-  Session { sessionID :: T.Text
+  Session { sessionID   :: T.Text
             -- ^ The unique session ID
           , sessionName :: T.Text
             -- ^ The optional session name
-          , updatedAt :: T.Text
+          , updatedAt   :: T.Text
             -- ^ The timestamp of when the session was last updated
-          , createdAt :: T.Text
+          , createdAt   :: T.Text
             -- ^ Creation timestamp
           }
   deriving (Show, Read, Eq, Ord)

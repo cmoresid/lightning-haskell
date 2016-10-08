@@ -12,11 +12,11 @@ Re-exports all the main types one is likely to need.
 
 module Web.Lightning.Types
   (
-    -- * Lightning Types 
+    -- * Lightning Types
     LightningError(..)
   , Session(..)
   )
   where
 
-import Web.Lightning.Types.Error (LightningError(..))
-import Web.Lightning.Types.Session (Session(..))
+import           Web.Lightning.Types.Error   (LightningError (..))
+import           Web.Lightning.Types.Session (Session (..))

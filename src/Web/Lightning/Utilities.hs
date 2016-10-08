@@ -25,8 +25,8 @@ module Web.Lightning.Utilities
   )
   where
 
-import Data.Aeson
-import qualified Data.Text as T
+import           Data.Aeson
+import qualified Data.Text  as T
 
 -- | Used in conjunction with ToJSON. It will stop any field that is
 -- Nothing (null) in a record from being encoded in JSON.
@@ -36,7 +36,7 @@ omitNulls :: [(T.Text, Value)]
              -- ^ The plot object with Nothing (null) fields removed.
 omitNulls = object . filter notNull where
   notNull (_, Null) = False
-  notNull _ = True
+  notNull _         = True
 
 -- | Converts the plot creation request record into the proper
 -- JSON object that the lightning-viz server expects.

@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell   #-}
 
 module Web.Lightning.Plots.Force
   ( ForcePlot(..)
@@ -21,9 +21,9 @@ import           Web.Lightning.Types.Visualization (Visualization (..))
 import           Web.Lightning.Utilities
 
 data ForcePlot =
-  ForcePlot { fpConn     :: [[Double]]
-            , fpGroup    :: [Int]
-            , fpLabel    :: [T.Text] }
+  ForcePlot { fpConn  :: [[Double]]
+            , fpGroup :: [Int]
+            , fpLabel :: [T.Text] }
   deriving (Show, Eq)
 
 instance Default ForcePlot where

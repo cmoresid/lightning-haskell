@@ -18,9 +18,9 @@ module Web.Lightning.Types.Error
     LightningError(..)
   ) where
 
-import Data.Aeson
+import           Data.Aeson
 
-import Network.API.Builder.Receive
+import           Network.API.Builder.Receive
 
 -- | Represents a wrapped JSON error object.
 data LightningError = LightningError Object
@@ -28,7 +28,7 @@ data LightningError = LightningError Object
 
 instance FromJSON LightningError where
   parseJSON (Object o) = return $ LightningError o
-  parseJSON _ = mempty
+  parseJSON _          = mempty
 
 instance ErrorReceivable LightningError where
   receiveError = useErrorFromJSON
