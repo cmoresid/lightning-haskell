@@ -2,11 +2,12 @@
 
 -- | Visualize a force-directed network from connectivity.
 module Web.Lightning.Plots.Force
-  ( ForcePlot(..)
+  (
+    ForcePlot(..)
   , Visualization (..)
   , forcePlot
-  , module Data.Default.Class
-  ) where
+  )
+  where
 
 --------------------------------------------------------------------------------
 import           Data.Aeson

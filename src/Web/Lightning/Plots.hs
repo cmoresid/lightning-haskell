@@ -20,7 +20,6 @@ module Web.Lightning.Plots
   , GraphPlot(..)
   , graphPlot
     -- * Graph Bundled
-  , GraphBundledPlot(..)
   , graphBundledPlot
     -- * Line
   , LinePlot(..)

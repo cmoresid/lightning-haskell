@@ -6,7 +6,6 @@ module Web.Lightning.Plots.Adjacency
     AdjacencyPlot(..)
   , Visualization (..)
   , adjacencyPlot
-  , module Data.Default.Class
   )
   where
 
@@ -32,7 +31,7 @@ data AdjacencyPlot =
                 , apLabels :: Maybe [T.Text]
                   -- ^ Text labels for each item (will label rows and columns).
                 , apGroup  :: Maybe [Int]
-                  -- ^ Single integer or list to set colors via groups.
+                  -- ^ List to set colors via groups.
                 , apSort   :: Maybe T.Text
                   -- ^ What to sort by; options are "group" or "degree."
                 , apNumbers :: Maybe Bool

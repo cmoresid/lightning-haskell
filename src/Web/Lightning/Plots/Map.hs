@@ -1,14 +1,15 @@
-{-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
 
+-- | Visualize a chlorpleth map of the world or united states.
 module Web.Lightning.Plots.Map
-  ( MapPlot(..)
+  (
+    MapPlot(..)
   , Visualization (..)
   , mapPlot
-  , defMapPlot
-  , module Data.Default.Class
-  ) where
+  )
+  where
 
+--------------------------------------------------------------------------------
 import           Data.Aeson
 import           Data.Default.Class
 import qualified Data.Text                         as T
@@ -17,26 +18,41 @@ import qualified Web.Lightning.Routes              as R
 import           Web.Lightning.Types.Lightning     (LightningT, sendPlot)
 import           Web.Lightning.Types.Visualization (Visualization (..))
 import           Web.Lightning.Utilities
+--------------------------------------------------------------------------------
 
+-- | Map plot parameters
 data MapPlot =
-  MapPlot { mppRegions  :: Maybe [T.Text]
-          , mppValues   :: Maybe [Double]
-          , mppColorMap :: Maybe T.Text }
+  MapPlot { mppRegions  ::  [T.Text]
+            -- ^ String identifies for map regions, either length of two
+            -- characters (for states in a US map) or length of three
+            -- (for counties in a world map).
+          , mppWeights  :: [Double]
+            -- ^ Values to use to color each reason
+          , mppColorMap :: Maybe T.Text
+            -- ^ Specification of color map; only colorbrew types supported.
+          }
   deriving (Show, Eq)
 
 instance Default MapPlot where
-  def = MapPlot Nothing Nothing Nothing
+  def = MapPlot [] [] Nothing
 
 instance ToJSON MapPlot where
-  toJSON mp = omitNulls
-    [
-      "regions" .= mppRegions mp
-    , "values" .= mppValues mp
-    , "colormap" .= mppColorMap mp
-    ]
+  toJSON (MapPlot rs vs cm) =
+    omitNulls [ "regions"  .= rs
+              , "values"   .= vs
+              , "colormap" .= cm
+              ]
 
-defMapPlot :: MapPlot
-defMapPlot = def :: MapPlot
-
-mapPlot :: Monad m => MapPlot -> LightningT m Visualization
-mapPlot mapPlt = sendPlot "map" mapPlt R.plot
+-- | Submits a request to the specified lightning-viz server to create a
+-- chloropleth map of the world or united states.
+--
+-- <http://lightning-viz.org/visualizations/map/ Map Visualization>
+mapPlot :: Monad m => T.Text
+                      -- ^ Base URL for lightning-viz server.
+                   -> MapPlot
+                      -- ^ Map plot to create.
+                   -> LightningT m Visualization
+                      -- ^ Transformer stack with created visualization.
+mapPlot bUrl mapPlt = do
+  viz <- sendPlot "map" mapPlt R.plot
+  return $ viz { vizBaseUrl = Just bUrl }

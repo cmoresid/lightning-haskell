@@ -2,10 +2,10 @@
 
 -- | Visualize one-dimensional series data as lines.
 module Web.Lightning.Plots.Line
-  ( LinePlot(..)
+  (
+    LinePlot(..)
   , Visualization (..)
   , linePlot
-  , module Data.Default.Class
   )
   where
 

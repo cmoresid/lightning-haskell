@@ -109,5 +109,11 @@ getPymLink :: T.Text
               -- ^ Returns the PYM link for visualization
 getPymLink bUrl viz = getLinkType bUrl viz "/pym"
 
-getPublicLink :: T.Text -> Visualization -> T.Text
+-- | Returns the public link for a visualization.
+getPublicLink :: T.Text
+                 -- ^ Base URL
+              -> Visualization
+                 -- ^ Visualization to create public link for.
+              -> T.Text
+                 -- ^ Returns the public link for visualization.
 getPublicLink bUrl viz = T.concat [getPermaLinkURL bUrl viz, "/public/"]
