@@ -1,3 +1,5 @@
 .stack-work/
 .DS_Store
 test.hs
+src/highlight.js
+src/style.css

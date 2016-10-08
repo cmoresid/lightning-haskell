@@ -1,18 +1,18 @@
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE GADTs                      #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings          #-}
 
 module Web.Lightning.Types.Lightning where
 
-import Control.Monad.IO.Class
-import Control.Monad.Trans.Free
-import Control.Monad.Trans.Class
-import qualified Data.Text as T
+import           Control.Monad.IO.Class
+import           Control.Monad.Trans.Class
+import           Control.Monad.Trans.Free
+import qualified Data.Text                 as T
 
-import Data.Aeson
+import           Data.Aeson
 
-import Network.API.Builder hiding (runRoute)
-import Web.Lightning.Types.Error
+import           Network.API.Builder       hiding (runRoute)
+import           Web.Lightning.Types.Error
 
 type Lightning a = LightningT IO a
 
@@ -24,10 +24,10 @@ data LightningF m a where
   WithBaseURL :: T.Text -> LightningT m b -> (b -> a) -> LightningF m a
 
 instance Functor (LightningF m) where
-  fmap _ (FailWith x) = FailWith x
-  fmap f (ReceiveRoute r x) = ReceiveRoute r (fmap f x)
-  fmap f (RunRoute r x) = RunRoute r (fmap f x)
-  fmap f (SendPlot t p r x) = SendPlot t p r (fmap f x)
+  fmap _ (FailWith x)        = FailWith x
+  fmap f (ReceiveRoute r x)  = ReceiveRoute r (fmap f x)
+  fmap f (RunRoute r x)      = RunRoute r (fmap f x)
+  fmap f (SendPlot t p r x)  = SendPlot t p r (fmap f x)
   fmap f (WithBaseURL u a x) = WithBaseURL u a (fmap f x)
 
 newtype LightningT m a = LightningT (FreeT (LightningF m) m a)
