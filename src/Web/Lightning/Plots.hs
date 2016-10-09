@@ -36,7 +36,13 @@ module Web.Lightning.Plots
     -- * 3D Scatter
   , Scatter3Plot(..)
   , scatter3Plot
-
+    -- * Circle
+  , CirclePlot(..)
+  , circlePlot
+    -- * Histogram
+  , HistogramPlot(..)
+  , histogramPlot
+  
   , module Data.Default.Class
   )
   where
@@ -50,5 +56,7 @@ import           Web.Lightning.Plots.GraphBundled
 import           Web.Lightning.Plots.Line
 import           Web.Lightning.Plots.Map
 import           Web.Lightning.Plots.Matrix
+import           Web.Lightning.Plots.Circle
+import           Web.Lightning.Plots.Histogram
 import           Web.Lightning.Plots.Scatter
 import           Web.Lightning.Plots.Scatter3

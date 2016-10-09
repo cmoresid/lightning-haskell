@@ -29,6 +29,8 @@ library
                      , Web.Lightning.Plots.Matrix
                      , Web.Lightning.Plots.Adjacency
                      , Web.Lightning.Plots.Map
+                     , Web.Lightning.Plots.Circle
+                     , Web.Lightning.Plots.Histogram
                      , Web.Lightning.Plots.Graph
                      , Web.Lightning.Plots.GraphBundled
                      , Web.Lightning.Plots.Scatter3
