@@ -11,12 +11,16 @@ Portability : POSIX
 
 Defines the Route mappings to the lightning-viz API.
 -}
+
 module Web.Lightning.Routes
   ( -- * API Endpoints
     plot
-  ) where
+  , publicLink
+  )
+  where
 
 import           Network.API.Builder hiding (runRoute)
+import           Web.Lightning.Types.Visualization (Visualization(..))
 
 -- | The main route that corresponds to the /visualizations endpoint. Using
 -- this route, one can create and update plots.
@@ -25,3 +29,9 @@ plot :: Route
 plot = Route ["visualizations"]
              []
              "POST"
+
+publicLink :: Visualization -> Route
+publicLink (Visualization i _ _) =
+  Route ["visualizations", i, "public"]
+        []
+        "GET"

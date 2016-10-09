@@ -18,6 +18,7 @@ library
   exposed-modules:     Web.Lightning
                      , Web.Lightning.Session
                      , Web.Lightning.Plots
+                     , Web.Lightning.Render
                      , Web.Lightning.Types
                      , Web.Lightning.Types.Lightning
                      , Web.Lightning.Types.Error
@@ -38,6 +39,7 @@ library
                      , Web.Lightning.Utilities
   build-depends:       base >= 4.7 && < 5
                      , aeson
+                     , blaze-html
                      , bytestring
                      , data-default-class
                      , free

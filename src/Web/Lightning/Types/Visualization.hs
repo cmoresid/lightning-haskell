@@ -29,6 +29,7 @@ import           Data.Aeson
 import qualified Data.Text           as T
 
 import           Network.API.Builder hiding (runRoute)
+import           Web.Lightning.Types.Lightning (defaultBaseURL)
 
 -- | Encapsulates the basic information about a created
 -- visualization.
@@ -62,58 +63,49 @@ formatURL url =
     _   -> T.concat [url, "/"]
 
 -- | Returns the permanent link for a visualization.
-getPermaLinkURL :: T.Text
-                   -- ^ Base URL
-                -> Visualization
+getPermaLinkURL :: Visualization
                    -- ^ The visualization to get permalink for
                 -> T.Text
                    -- ^ Returns the permalink for visualization.
-getPermaLinkURL bUrl viz = T.concat [bUrl, "/visualizations/", vizId viz]
+getPermaLinkURL (Visualization i _ (Just bUrl)) =
+  T.concat [formatURL bUrl, "visualizations/", i]
+getPermaLinkURL (Visualization i _ Nothing) =
+  T.concat [formatURL defaultBaseURL, "visualizations/", i]
 
 -- | Returns a partial URL based on the link type parameter.
-getLinkType :: T.Text
-               -- ^ Base URL
-            -> Visualization
+getLinkType :: Visualization
                -- ^ Visualization to create link for
             -> T.Text
                -- ^ The link type
             -> T.Text
                -- ^ The partially formatted URL
-getLinkType bUrl viz link = formatURL $ T.concat [permaLink, link]
-  where permaLink = getPermaLinkURL bUrl viz
+getLinkType viz link = formatURL $ T.concat [permaLink, link]
+  where permaLink = getPermaLinkURL viz
 
 -- | Returns the embedded link URL for a visualization.
-getEmbedLink :: T.Text
-                -- ^ Base URL
-             -> Visualization
+getEmbedLink :: Visualization
                 -- ^ Visualization to create embedded link
              -> T.Text
                 -- ^ Returns the embedded link for visualization
-getEmbedLink bUrl viz = getLinkType bUrl viz "/embed"
+getEmbedLink viz = getLinkType viz "/embed/"
 
 -- | Returns the iFrame link URL for a visualization
-getIFrameLink :: T.Text
-                 -- ^ Base URL
-              -> Visualization
+getIFrameLink :: Visualization
                  -- ^ Visualization to create iFrame link for
               -> T.Text
                  -- ^ Returns the iFrame link for visualization
-getIFrameLink bUrl viz = getLinkType bUrl viz "/iframe"
+getIFrameLink viz = getLinkType viz "/iframe/"
 
 -- | Returns the PYM link for visualization.
-getPymLink :: T.Text
-              -- ^ Base URL
-           -> Visualization
+getPymLink :: Visualization
               -- ^ Visualization to create PYM link for
            -> T.Text
               -- ^ Returns the PYM link for visualization
-getPymLink bUrl viz = getLinkType bUrl viz "/pym"
+getPymLink viz = getLinkType viz "/pym/"
 
 -- | Returns the public link for a visualization.
-getPublicLink :: T.Text
-                 -- ^ Base URL
-              -> Visualization
+getPublicLink :: Visualization
                  -- ^ Visualization to create public link for.
               -> T.Text
                  -- ^ Returns the public link for visualization.
-getPublicLink bUrl viz = T.concat [getPermaLinkURL bUrl viz, "/public/"]
+getPublicLink viz = getLinkType viz "/public/"

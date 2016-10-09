@@ -42,7 +42,7 @@ module Web.Lightning.Plots
     -- * Histogram
   , HistogramPlot(..)
   , histogramPlot
-  
+
   , module Data.Default.Class
   )
   where
