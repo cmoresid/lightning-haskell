@@ -1,4 +1,6 @@
 .stack-work/
+.ipynb_checkpoints/
+dist/
 .DS_Store
 test.hs
 src/highlight.js
