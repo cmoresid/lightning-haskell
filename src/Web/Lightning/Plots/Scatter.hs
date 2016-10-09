@@ -2,10 +2,12 @@
 
 -- | Visualize spatial points as a scatter plot.
 module Web.Lightning.Plots.Scatter
-  ( ScatterPlot(..)
+  (
+    ScatterPlot(..)
   , Visualization (..)
   , scatterPlot
-  ) where
+  )
+  where
 
 --------------------------------------------------------------------------------
 import           Data.Aeson
