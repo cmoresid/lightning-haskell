@@ -63,14 +63,31 @@ getLinks :: [[Double]]
             -- ^ The adjacency matrix
          -> [[Double]]
             -- ^ All the links for each of the nodes
-getLinks _ = [[]]
+getLinks conn
+  | length conn == length (head conn) = s1 (zipWithIndex conn)
+  | otherwise                         = s4 conn
+  where s1 = concatMap (\(row, i) -> s3 i (s2 (zipWithIndex row)))
+        s2 = filter (\(x, _) -> x /= 0)
+        s3 i = map (\(x, j) -> [i, j, x] :: [Double])
+        s4 xs = case length xs of
+          2 -> xs
+          3 -> map (\l -> [head l, l !! 1, 1.0]) xs
+          _ -> [[]]
+
+zipWithIndex :: (Enum b, Num b) => [a] -> [(a, b)]
+zipWithIndex [] = []
+zipWithIndex xs = zipWith (\i el -> (i, el)) xs [0..]
 
 -- | Retrieves all of the nodes from an adjacency matrix.
 getNodes :: [[Double]]
             -- ^ The adjacency matrix
          -> [Int]
             -- ^ A list of all of the nodes in matrix
-getNodes _ = []
+getNodes conn
+  | length conn == length (head conn) = [0..length conn]
+  | otherwise                         = [0..n]
+  where n = floor $ maximum $ map maximum conn
+
 
 -- | Zips up x and y points into array pairs.
 getPoints :: [Double]
