@@ -25,11 +25,13 @@ module Web.Lightning.Types.Visualization
   )
   where
 
+--------------------------------------------------------------------------------
 import           Data.Aeson
-import qualified Data.Text           as T
+import qualified Data.Text                     as T
 
-import           Network.API.Builder hiding (runRoute)
+import           Network.API.Builder           hiding (runRoute)
 import           Web.Lightning.Types.Lightning (defaultBaseURL)
+--------------------------------------------------------------------------------
 
 -- | Encapsulates the basic information about a created
 -- visualization.

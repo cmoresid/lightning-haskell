@@ -2,18 +2,20 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Web.Lightning
-  ( LoginMethod(..)
+  (
+    LoginMethod(..)
   , LightningOptions(..)
   , LightningState(..)
   , runLightning
   , runLightningWith
   , runResumeLightningtWith
-  -- * Re-export the following modules
   , APIError(..)
   , module Web.Lightning.Types.Error
   , module Web.Lightning.Types.Lightning
-  ) where
+  )
+  where
 
+--------------------------------------------------------------------------------
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans.Free
 
@@ -21,30 +23,40 @@ import           Data.Aeson
 import           Data.Default.Class
 import qualified Data.Text                     as T
 
+import           Web.Lightning.Session
 import           Web.Lightning.Types.Error
 import           Web.Lightning.Types.Lightning
-import           Web.Lightning.Session
 import           Web.Lightning.Utilities
 
 import           Network.HTTP.Client
 import           Network.HTTP.Client.TLS
 
 import           Network.API.Builder           as API
+--------------------------------------------------------------------------------
 
+-- | Defines the available authentication mechanisms for the lightning-viz
+-- server.
 data LoginMethod = Anonymous
   deriving (Show)
 
 instance Default LoginMethod where
   def = Anonymous
 
+-- |
 data LightningOptions =
-  LightningOptions { optConnManager   :: Maybe Manager
-                   , optHostUrl       :: T.Text
-                   , optLoginMethod   :: LoginMethod
-                   , optSession       :: Maybe Session }
+  LightningOptions { optConnManager :: Maybe Manager
+                   , optHostUrl     :: T.Text
+                   , optLoginMethod :: LoginMethod
+                   , optSession     :: Maybe Session }
 
 instance Default LightningOptions where
   def = LightningOptions Nothing defaultBaseURL Anonymous Nothing
+
+data LightningState =
+  LightningState { stCurrentBaseURL :: T.Text
+                 , stConnManager    :: Manager
+                 , stSession        :: Maybe Session
+                 }
 
 runLightning :: MonadIO m => Maybe Session ->
                              LightningT m a ->
@@ -121,13 +133,8 @@ builderFromState (LightningState hurl _ (Just s)) =
 builderFromState (LightningState hurl _ Nothing) =
   Builder "Lightning" hurl id id
 
+
 dropResume :: Either (APIError LightningError, Maybe (LightningT m a)) a
                     -> Either (APIError LightningError) a
 dropResume (Left (x, _)) = Left x
 dropResume (Right x)     = Right x
-
-data LightningState =
-  LightningState { stCurrentBaseURL :: T.Text
-                 , stConnManager    :: Manager
-                 , stSession        :: Maybe Session
-                 }

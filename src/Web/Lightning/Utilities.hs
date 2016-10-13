@@ -25,8 +25,10 @@ module Web.Lightning.Utilities
   )
   where
 
+--------------------------------------------------------------------------------
 import           Data.Aeson
 import qualified Data.Text  as T
+--------------------------------------------------------------------------------
 
 -- | Used in conjunction with ToJSON. It will stop any field that is
 -- Nothing (null) in a record from being encoded in JSON.

@@ -2,14 +2,12 @@
 
 {-|
 Module      : Web.Lightning.Types.Error
-Description : Lightining error type
+Description : Lightning error type
 Copyright   : (c) Connor Moreside, 2016
 License     : BSD-3
 Maintainer  : connor@moresi.de
 Stability   : experimental
 Portability : POSIX
-
-Defines the Lightning error type.
 -}
 
 module Web.Lightning.Types.Error
@@ -18,13 +16,22 @@ module Web.Lightning.Types.Error
     LightningError(..)
   ) where
 
+--------------------------------------------------------------------------------
 import           Data.Aeson
+import qualified Data.Text                   as T
 
 import           Network.API.Builder.Receive
+--------------------------------------------------------------------------------
 
--- | Represents a wrapped JSON error object.
-data LightningError = LightningError Object
-  deriving (Show)
+-- | Represents the different errors that may be raised in the lightning-viz
+-- wrapper.
+data LightningError = LightningError  Object
+                      -- ^ Represents a JSON error returned by lightning-viz.
+                    | FailError       T.Text
+                      -- ^ Represents a generic exception error.
+                    | ValidationError T.Text
+                      -- ^ Represents a validation error in a request record.
+                    deriving (Show, Eq)
 
 instance FromJSON LightningError where
   parseJSON (Object o) = return $ LightningError o
