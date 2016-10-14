@@ -8,6 +8,10 @@ module Web.Lightning
   , runLightning
   , runLightningWith
   , runResumeLightningtWith
+  -- * Client configuration
+  , defaultLightningOptions
+  , setSessionName
+  , setSessionId
   -- * Re-export the following modules
   , APIError(..)
   , module Web.Lightning.Types.Error
@@ -46,10 +50,31 @@ data LightningOptions =
 instance Default LightningOptions where
   def = LightningOptions Nothing defaultBaseURL Anonymous Nothing
 
-runLightning :: MonadIO m => Maybe Session ->
-                             LightningT m a ->
-                             m (Either (APIError LightningError) a)
-runLightning s = runLightningWith def { optSession = s }
+defaultLightningOptions :: LightningOptions
+defaultLightningOptions = def
+
+setSessionName :: T.Text -> LightningOptions -> LightningOptions
+setSessionName n opts@(LightningOptions _ _ _ s) =
+  opts { optSession = Just sess }
+  where
+    sess =
+      case s of
+        Nothing -> def { snName = Just n }
+        Just s' -> s' { snName = Just n }
+
+setSessionId :: T.Text -> LightningOptions -> LightningOptions
+setSessionId i opts@(LightningOptions _ _ _ s) =
+  opts { optSession = Just sess }
+  where
+    sess =
+      case s of
+        Nothing -> def { snId = i }
+        Just s' -> s' { snId = i }
+
+runLightning :: MonadIO m
+             => LightningT m a
+             -> m (Either (APIError LightningError) a)
+runLightning = runLightningWith defaultLightningOptions
 
 runLightningWith :: MonadIO m => LightningOptions
                      -> LightningT m a -> m (Either (APIError LightningError) a)
@@ -88,7 +113,11 @@ runResumeLightningtWith (LightningOptions cm hu _ s) lightning = do
     Just m  -> return m
     Nothing -> liftIO $ newManager tlsManagerSettings
   session <- case s of
-    Just s' -> return $ Right $ Just s'
+    Just s' ->
+      case snId s' of
+        "" -> (fmap . fmap) Just $
+          interpretIO (LightningState hu manager Nothing) $ createSession $ snName s'
+        _ -> return $ Right $ Just s'
     Nothing -> (fmap . fmap) Just $
       interpretIO (LightningState hu manager Nothing) $ createSession Nothing
   case session of
