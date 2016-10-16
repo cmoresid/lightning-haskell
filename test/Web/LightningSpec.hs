@@ -23,3 +23,7 @@ spec = do
       let opts = setSessionId "abc-xyz" defaultLightningOptions
           sess = fromJust $ optSession opts
        in snId sess `shouldBe` "abc-xyz"
+    it "allows setting HTTP Basic Auth credentials" $ do
+      let opts = setBasicAuth ("user", "secret") defaultLightningOptions
+          (BasicAuth (_, p)) = optLoginMethod opts
+       in p `shouldBe` "secret"
