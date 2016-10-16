@@ -1,14 +1,31 @@
 {-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
 
+{-|
+Module      : Web.Lightning
+Description : lightning-viz REST API wrapper.
+Copyright   : (c) Connor Moreside, 2016
+License     : BSD-3
+Maintainer  : connor@moresi.de
+Stability   : experimental
+Portability : POSIX
+-}
+
 module Web.Lightning
   (
+    -- * Lightning Types
     LoginMethod(..)
   , LightningOptions(..)
   , LightningState(..)
+    -- * Execute
   , runLightning
   , runLightningWith
   , runResumeLightningtWith
+  -- * Client configuration
+  , defaultLightningOptions
+  , setSessionName
+  , setSessionId
+  -- * Re-exports
   , APIError(..)
   , module Web.Lightning.Types.Error
   , module Web.Lightning.Types.Lightning
@@ -34,40 +51,82 @@ import           Network.HTTP.Client.TLS
 import           Network.API.Builder           as API
 --------------------------------------------------------------------------------
 
--- | Defines the available authentication mechanisms for the lightning-viz
--- server.
-data LoginMethod = Anonymous
+-- | Represents the different authentication mechanisms available in
+-- the lightning-viz server.
+data LoginMethod = Anonymous -- ^
   deriving (Show)
 
 instance Default LoginMethod where
   def = Anonymous
 
--- |
+-- | Defines the available options for running a lightning action(s).
 data LightningOptions =
   LightningOptions { optConnManager :: Maybe Manager
+                     -- ^ Re-usable connection manager used during Lightning
+                     -- session.
                    , optHostUrl     :: T.Text
+                     -- ^ The base lightning-viz server url.
                    , optLoginMethod :: LoginMethod
-                   , optSession     :: Maybe Session }
+                     -- ^ The authentication mechanism used to communicate
+                     -- with the lightning-viz server.
+                   , optSession     :: Maybe Session
+                     -- ^ Defines what session to use when creating viaualizations
+                     -- on the lightning-viz server. If no session is specified,
+                     -- one will be created automatically.
+                   }
 
 instance Default LightningOptions where
   def = LightningOptions Nothing defaultBaseURL Anonymous Nothing
 
-data LightningState =
-  LightningState { stCurrentBaseURL :: T.Text
-                 , stConnManager    :: Manager
-                 , stSession        :: Maybe Session
-                 }
+-- | Defines the default lightning-viz options.
+defaultLightningOptions :: LightningOptions
+defaultLightningOptions = def
 
-runLightning :: MonadIO m => Maybe Session ->
-                             LightningT m a ->
-                             m (Either (APIError LightningError) a)
-runLightning s = runLightningWith def { optSession = s }
+-- | Sets the name of the session that is nested in the
+-- given 'LightningOptions' record.
+setSessionName :: T.Text
+                  -- ^ The new session name
+               -> LightningOptions
+               -> LightningOptions
+setSessionName n opts@(LightningOptions _ _ _ s) =
+  opts { optSession = Just sess }
+  where
+    sess =
+      case s of
+        Nothing -> def { snName = Just n }
+        Just s' -> s' { snName = Just n }
 
+-- | Sets the session ID of the session nested in the given
+-- 'LightningOptions' record.
+setSessionId :: T.Text
+                -- ^ The new session ID
+             -> LightningOptions
+             -> LightningOptions
+setSessionId i opts@(LightningOptions _ _ _ s) =
+  opts { optSession = Just sess }
+  where
+    sess =
+      case s of
+        Nothing -> def { snId = i }
+        Just s' -> s' { snId = i }
+
+-- | Performs a lightning action (or 'LightningT' transformer actions) with the
+-- default lightning options. By default, the lightning-viz server is assumed to
+-- be running on http://localhost:3000 and a new session will be created.
+runLightning :: MonadIO m
+             => LightningT m a
+             -> m (Either (APIError LightningError) a)
+runLightning = runLightningWith defaultLightningOptions
+
+-- | Performs a lightning action (or 'LightningT' transformer actions) with
+-- the specified lightning options.
 runLightningWith :: MonadIO m => LightningOptions
-                     -> LightningT m a -> m (Either (APIError LightningError) a)
+                     -> LightningT m a
+                     -> m (Either (APIError LightningError) a)
 runLightningWith opts lightning =
   dropResume <$> runResumeLightningtWith opts lightning
 
+-- | Runs a specified series of lightning actions.
 interpretIO :: MonadIO m => LightningState
                 -> LightningT m a
                 -> m (Either (APIError LightningError, Maybe (LightningT m a)) a)
@@ -92,6 +151,7 @@ interpretIO lstate (LightningT r) =
         Left err -> return $ Left (err, Just $ LightningT $ wrap $ ReceiveRoute route n)
         Right x -> interpretIO lstate $ LightningT $ n x
 
+-- | Runs a lightning action using the specified options.
 runResumeLightningtWith :: MonadIO m => LightningOptions
                             -> LightningT m a
                             -> m (Either (APIError LightningError, Maybe (LightningT m a)) a)
@@ -100,7 +160,11 @@ runResumeLightningtWith (LightningOptions cm hu _ s) lightning = do
     Just m  -> return m
     Nothing -> liftIO $ newManager tlsManagerSettings
   session <- case s of
-    Just s' -> return $ Right $ Just s'
+    Just s' ->
+      case snId s' of
+        "" -> (fmap . fmap) Just $
+          interpretIO (LightningState hu manager Nothing) $ createSession $ snName s'
+        _ -> return $ Right $ Just s'
     Nothing -> (fmap . fmap) Just $
       interpretIO (LightningState hu manager Nothing) $ createSession Nothing
   case session of
@@ -108,6 +172,7 @@ runResumeLightningtWith (LightningOptions cm hu _ s) lightning = do
     Right s' ->
       interpretIO (LightningState hu manager s') lightning
 
+-- | Runs the specified route using the current state.
 handleReceive :: (MonadIO m, Receivable a) => Route
                     -> LightningState
                     -> m (Either (APIError LightningError) a)
@@ -117,6 +182,8 @@ handleReceive r lstate = do
 
   return res
 
+-- | Runs the specified route and sends the specified JSON value as the the
+-- request body.
 handleSendJSON :: (MonadIO m, Receivable a) => Route
                     -> LightningState
                     -> Value
@@ -127,14 +194,27 @@ handleSendJSON r lstate p = do
 
   return res
 
-builderFromState :: LightningState -> Builder
+-- | Creates a 'Builder' record to keep track of the lightning-viz server's
+-- name and base URL.
+builderFromState :: LightningState
+                 -> Builder
 builderFromState (LightningState hurl _ (Just s)) =
   Builder "Lightning" (addSessionId hurl (snId s)) id id
 builderFromState (LightningState hurl _ Nothing) =
   Builder "Lightning" hurl id id
 
-
+-- | Unwraps the response from interpretIO.
 dropResume :: Either (APIError LightningError, Maybe (LightningT m a)) a
                     -> Either (APIError LightningError) a
 dropResume (Left (x, _)) = Left x
 dropResume (Right x)     = Right x
+
+-- | Stores the current state of the lightning transformer stack.
+data LightningState =
+  LightningState { stCurrentBaseURL :: T.Text
+                   -- ^ Current base URL of the lightning-viz server.
+                 , stConnManager    :: Manager
+                   -- ^ Current connection manager used to run actions.
+                 , stSession        :: Maybe Session
+                   -- ^ The current lightning session to run actions against.
+                 }
