@@ -19,6 +19,7 @@ module Web.Lightning.Session
   , module Web.Lightning.Types.Session
   ) where
 
+--------------------------------------------------------------------------------
 import qualified Data.Text                     as T
 
 import           Data.Maybe
@@ -27,7 +28,7 @@ import           Network.API.Builder           hiding (runRoute)
 
 import           Web.Lightning.Types.Lightning
 import           Web.Lightning.Types.Session
-
+--------------------------------------------------------------------------------
 
 -- | Session endpoint.
 createSessionRoute :: Maybe T.Text

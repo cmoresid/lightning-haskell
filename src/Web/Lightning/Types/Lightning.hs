@@ -2,8 +2,33 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings          #-}
 
-module Web.Lightning.Types.Lightning where
+{-|
+Module      : Web.Lightning.Types.Lightning
+Description : Main Lightning Types
+Copyright   : (c) Connor Moreside, 2016
+License     : BSD-3
+Maintainer  : connor@moresi.de
+Stability   : experimental
+Portability : POSIX
+-}
 
+module Web.Lightning.Types.Lightning
+  (
+    -- * Lightning Types
+    Lightning
+  , LightningF(..)
+  , LightningT(..)
+    -- * Lightning Actions
+  , runRoute
+  , sendPlot
+  , receiveRoute
+  , withBaseURL
+  , failWith
+  , defaultBaseURL
+  )
+  where
+
+--------------------------------------------------------------------------------
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Free
@@ -14,9 +39,12 @@ import           Data.Aeson
 import           Network.API.Builder       hiding (runRoute)
 import           Web.Lightning.Types.Error
 import           Web.Lightning.Utilities
+--------------------------------------------------------------------------------
 
+-- | Represents an IO Lightning transformer action.
 type Lightning a = LightningT IO a
 
+-- | Defines the available actions
 data LightningF m a where
   FailWith     :: APIError LightningError -> LightningF m a
   ReceiveRoute :: Receivable b => Route -> (b -> a) -> LightningF m a
@@ -31,6 +59,7 @@ instance Functor (LightningF m) where
   fmap f (SendJSON js r x)   = SendJSON js r (fmap f x)
   fmap f (WithBaseURL u a x) = WithBaseURL u a (fmap f x)
 
+-- | Defines free monad transformer
 newtype LightningT m a = LightningT (FreeT (LightningF m) m a)
   deriving (Functor, Applicative, Monad)
 
@@ -40,20 +69,48 @@ instance MonadTrans LightningT where
 instance MonadIO m => MonadIO (LightningT m) where
   liftIO = LightningT . liftIO
 
-runRoute :: (FromJSON a, Monad m) => Route -> LightningT m a
+
+-- | Runs a route action within the free monadic transformer context.
+runRoute :: (FromJSON a, Monad m) => Route
+                                     -- ^ Route to run
+                                  -> LightningT m a
+                                     -- ^ Monad transformer stack with result.
 runRoute r = LightningT $ liftF $ RunRoute r id
 
-sendPlot :: (ToJSON p, Receivable a, Monad m) => T.Text -> p -> Route -> LightningT m a
+-- | Sends a request to the lightning-viz server to create a visualization.
+sendPlot :: (ToJSON p, Receivable a, Monad m) => T.Text
+                                                 -- ^ The plot type
+                                              -> p
+                                                 -- ^ The plot creation request
+                                              -> Route
+                                                 -- ^ The plot route.
+                                              -> LightningT m a
+                                                 -- ^ Monad transformer stack with result.
 sendPlot t p r = LightningT $ liftF $ SendJSON (createPayLoad t $ toJSON p) r id
 
-receiveRoute :: (Receivable a, Monad m) => Route -> LightningT m a
+-- | Send and receives a GET request to the specified route.
+receiveRoute :: (Receivable a, Monad m) => Route
+                                           -- ^ The route to retrieve data from.
+                                        -> LightningT m a
+                                           -- ^ Monad transformer stack with result.
 receiveRoute r = LightningT $ liftF $ ReceiveRoute r id
 
-withBaseURL :: Monad m => T.Text -> LightningT m a -> LightningT m a
+-- | Replaces the base URL in the stack and run the supplied action afterwards.
+withBaseURL :: Monad m => T.Text
+                          -- ^ The new base URL.
+                       -> LightningT m a
+                          -- ^ Next action to run.
+                       -> LightningT m a
+                          -- ^ Monad transformer stack with result.
 withBaseURL u f = LightningT $ liftF $ WithBaseURL u f id
 
-failWith :: Monad m => APIError LightningError -> LightningT m a
+-- | Returns an error message.
+failWith :: Monad m => APIError LightningError
+                       -- ^ The error message to return.
+                    -> LightningT m a
+                       -- ^ Monad transformer stack with error.
 failWith = LightningT . liftF . FailWith
 
+-- | Defines the default URL for the lightning-viz server.
 defaultBaseURL :: T.Text
 defaultBaseURL = "http://localhost:3000"

@@ -1,14 +1,14 @@
-{-# LANGUAGE FlexibleInstances    #-}
-{-# LANGUAGE OverloadedStrings    #-}
+{-# LANGUAGE OverloadedStrings #-}
 
-{-# OPTIONS_GHC -fno-warn-orphans #-}
-
+-- | Contains functions needed for rendering plots in IHaskell.
 module Web.Lightning.Render
   (
+    -- * IHaskell Rendering
     renderPlot
   )
   where
 
+--------------------------------------------------------------------------------
 import           Control.Monad.IO.Class
 
 import qualified Data.ByteString.Lazy              as BS
@@ -22,8 +22,13 @@ import           Network.HTTP.Client.TLS
 import qualified Text.Blaze.Html                   as BZ
 import           Web.Lightning.Types.Visualization (Visualization (..),
                                                     getPublicLink)
+--------------------------------------------------------------------------------
 
-renderPlot :: Either (APIError a) Visualization -> IO BZ.Markup
+-- | For use in IHaskell - Renders the visualization in an IHaskell notebook.
+renderPlot :: Either (APIError a) Visualization
+              -- ^ The visualization to render.
+           -> IO BZ.Markup
+              -- ^ The HTML representation of the visualization.
 renderPlot (Left _) = return $ BZ.string "No visualization."
 renderPlot (Right viz) = do
   manager <- liftIO $ newManager tlsManagerSettings

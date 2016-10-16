@@ -19,11 +19,13 @@ module Web.Lightning.Types.Session
   )
   where
 
+--------------------------------------------------------------------------------
 import           Data.Aeson
 import           Data.Default.Class
 import qualified Data.Text           as T
 
 import           Network.API.Builder hiding (runRoute)
+--------------------------------------------------------------------------------
 
 -- | Represents a lightning-viz session. A session ID is required to create
 -- a plot.
