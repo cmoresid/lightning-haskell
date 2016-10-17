@@ -25,6 +25,7 @@ module Web.Lightning
   , defaultLightningOptions
   , setSessionName
   , setSessionId
+  , setBasicAuth
   -- * Re-exports
   , APIError(..)
   , module Web.Lightning.Types.Error
@@ -37,6 +38,7 @@ import           Control.Monad.IO.Class
 import           Control.Monad.Trans.Free
 
 import           Data.Aeson
+import qualified Data.ByteString               as B
 import           Data.Default.Class
 import qualified Data.Text                     as T
 
@@ -53,8 +55,12 @@ import           Network.API.Builder           as API
 
 -- | Represents the different authentication mechanisms available in
 -- the lightning-viz server.
-data LoginMethod = Anonymous -- ^
-  deriving (Show)
+data LoginMethod = Anonymous -- ^ No authentication required
+                 | BasicAuth Credentials -- ^ HTTP Basic Authentication
+                 deriving (Show)
+
+{- | Username and password pair for authenticating to the lightning-viz server. -}
+type Credentials = (B.ByteString, B.ByteString)
 
 instance Default LoginMethod where
   def = Anonymous
@@ -110,6 +116,11 @@ setSessionId i opts@(LightningOptions _ _ _ s) =
         Nothing -> def { snId = i }
         Just s' -> s' { snId = i }
 
+-- | Sets 'BasicAuth' with 'Credentials' as the login method in the
+-- given 'LightningOptions' record.
+setBasicAuth :: Credentials -> LightningOptions -> LightningOptions
+setBasicAuth creds opts = opts { optLoginMethod = BasicAuth creds }
+
 -- | Performs a lightning action (or 'LightningT' transformer actions) with the
 -- default lightning options. By default, the lightning-viz server is assumed to
 -- be running on http://localhost:3000 and a new session will be created.
@@ -155,22 +166,25 @@ interpretIO lstate (LightningT r) =
 runResumeLightningtWith :: MonadIO m => LightningOptions
                             -> LightningT m a
                             -> m (Either (APIError LightningError, Maybe (LightningT m a)) a)
-runResumeLightningtWith (LightningOptions cm hu _ s) lightning = do
+runResumeLightningtWith (LightningOptions cm hu lm s) lightning = do
   manager <- case cm of
     Just m  -> return m
     Nothing -> liftIO $ newManager tlsManagerSettings
+  auth <- case lm of
+    Anonymous -> return id
+    BasicAuth creds -> return $ uncurry applyBasicAuth creds
   session <- case s of
     Just s' ->
       case snId s' of
         "" -> (fmap . fmap) Just $
-          interpretIO (LightningState hu manager Nothing) $ createSession $ snName s'
+          interpretIO (LightningState hu manager Nothing auth) $ createSession $ snName s'
         _ -> return $ Right $ Just s'
     Nothing -> (fmap . fmap) Just $
-      interpretIO (LightningState hu manager Nothing) $ createSession Nothing
+      interpretIO (LightningState hu manager Nothing auth) $ createSession Nothing
   case session of
     Left (err, _) -> return $ Left (err, Just lightning)
     Right s' ->
-      interpretIO (LightningState hu manager s') lightning
+      interpretIO (LightningState hu manager s' auth) lightning
 
 -- | Runs the specified route using the current state.
 handleReceive :: (MonadIO m, Receivable a) => Route
@@ -198,10 +212,10 @@ handleSendJSON r lstate p = do
 -- name and base URL.
 builderFromState :: LightningState
                  -> Builder
-builderFromState (LightningState hurl _ (Just s)) =
-  Builder "Lightning" (addSessionId hurl (snId s)) id id
-builderFromState (LightningState hurl _ Nothing) =
-  Builder "Lightning" hurl id id
+builderFromState (LightningState hurl _ (Just s) auth) =
+  Builder "Lightning" (addSessionId hurl (snId s)) id auth
+builderFromState (LightningState hurl _ Nothing auth) =
+  Builder "Lightning" hurl id auth
 
 -- | Unwraps the response from interpretIO.
 dropResume :: Either (APIError LightningError, Maybe (LightningT m a)) a
@@ -217,4 +231,7 @@ data LightningState =
                    -- ^ Current connection manager used to run actions.
                  , stSession        :: Maybe Session
                    -- ^ The current lightning session to run actions against.
+                 , stApplyAuth      :: Request -> Request
+                   -- ^ Hook to add auth credentials on performing a request
+                   -- to the lightning-viz sever.
                  }
