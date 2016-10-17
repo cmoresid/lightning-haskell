@@ -86,8 +86,8 @@ getNodes :: [[Double]]
          -> [Int]
             -- ^ A list of all of the nodes in matrix
 getNodes conn
-  | length conn == length (head conn) = [0..length conn]
-  | otherwise                         = [0..n]
+  | length conn == length (head conn) = [0..length conn - 1]
+  | otherwise                         = [0..n - 1]
   where n = floor $ maximum $ map maximum conn
 
 
