@@ -15,7 +15,7 @@ import           Data.Default.Class
 import qualified Data.Text                         as T
 
 import qualified Web.Lightning.Routes              as R
-import           Web.Lightning.Types.Lightning     (LightningT, sendPlot)
+import           Web.Lightning.Types.Lightning
 import           Web.Lightning.Types.Visualization (Visualization (..))
 import           Web.Lightning.Utilities
 --------------------------------------------------------------------------------
@@ -42,6 +42,9 @@ instance ToJSON MapPlot where
               , "values"   .= vs
               , "colormap" .= cm
               ]
+
+instance ValidatablePlot MapPlot where
+  validatePlot = return
 
 -- | Submits a request to the specified lightning-viz server to create a
 -- chloropleth map of the world or united states.

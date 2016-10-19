@@ -15,7 +15,7 @@ import           Data.Default.Class
 import qualified Data.Text                         as T
 
 import qualified Web.Lightning.Routes              as R
-import           Web.Lightning.Types.Lightning     (LightningT, sendPlot)
+import           Web.Lightning.Types.Lightning
 import           Web.Lightning.Types.Visualization (Visualization (..))
 import           Web.Lightning.Utilities
 --------------------------------------------------------------------------------
@@ -58,6 +58,9 @@ instance ToJSON LinePlot where
               , "yaxis"     .= ya
               , "zoom"      .= z
               ]
+
+instance ValidatablePlot LinePlot where
+  validatePlot = return
 
 -- | Submits a request to the specified lightning-viz server to create a plot
 -- to visualize one-dimensional series.

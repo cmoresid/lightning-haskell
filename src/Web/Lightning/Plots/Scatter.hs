@@ -15,7 +15,7 @@ import           Data.Default.Class
 import qualified Data.Text                         as T
 
 import qualified Web.Lightning.Routes              as R
-import           Web.Lightning.Types.Lightning     (LightningT, sendPlot)
+import           Web.Lightning.Types.Lightning
 import           Web.Lightning.Types.Visualization (Visualization (..))
 import           Web.Lightning.Utilities           (getPoints, omitNulls)
 --------------------------------------------------------------------------------
@@ -73,6 +73,9 @@ instance ToJSON ScatterPlot where
               , "zoom"      .= z
               , "brush"     .= b
               ]
+
+instance ValidatablePlot ScatterPlot where
+  validatePlot = return
 
 -- | Submits a request to the specified lightning-viz server to create
 -- a scatter plot.
