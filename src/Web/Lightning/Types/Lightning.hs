@@ -22,6 +22,7 @@ module Web.Lightning.Types.Lightning
     -- * Lightning Actions
   , runRoute
   , sendPlot
+  , sendJSON
   , receiveRoute
   , withBaseURL
   , failWith
@@ -91,9 +92,19 @@ sendPlot :: (ToJSON p, ValidatablePlot p, Receivable a, Monad m) => T.Text
                                                  -- ^ The plot route.
                                               -> LightningT m a
                                                  -- ^ Monad transformer stack with result.
-sendPlot t p r = case validatePlot p of
-  Left err -> LightningT $ liftF $ FailWith (APIError err)
-  Right p' -> LightningT $ liftF $ SendJSON (createPayLoad t $ toJSON p') r id
+sendPlot t p r =
+  case validatePlot p of
+    Left err -> failWith (APIError err)
+    Right p' -> sendJSON (createPayLoad t $ toJSON p') r
+
+-- | Sends a request containing JSON to the specified route.
+sendJSON :: (Receivable a, Monad m) => Value
+                                       -- ^ The JSON payload
+                                    -> Route
+                                       -- ^ Route to send request to
+                                    -> LightningT m a
+                                       -- ^ Monad transformer stack with result.
+sendJSON j r = LightningT $ liftF $ SendJSON j r id
 
 -- | Send and receives a GET request to the specified route.
 receiveRoute :: (Receivable a, Monad m) => Route
