@@ -69,7 +69,12 @@ instance ToJSON ForcePlot where
               ]
 
 instance ValidatablePlot ForcePlot where
-  validatePlot = return
+  validatePlot (ForcePlot conn vl lbl c grp cm s tt z b) = do
+    conn' <- validateConn conn
+    c' <- validateColor c
+    cm' <- validateColorMap cm
+    s' <- validateSize s
+    return $ ForcePlot conn' vl lbl c' grp cm' s' tt z b
 
 -- | Submits a request to the specified lightning-viz server to create a
 -- force-directed network visualization from connectivity.

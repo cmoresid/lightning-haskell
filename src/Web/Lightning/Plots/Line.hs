@@ -60,7 +60,11 @@ instance ToJSON LinePlot where
               ]
 
 instance ValidatablePlot LinePlot where
-  validatePlot = return
+  validatePlot (LinePlot s i c g t xa ya z) = do
+    i' <- validateIndex i
+    c' <- validateColor c
+    t' <- validateThickness t
+    return $ LinePlot s i' c' g t' xa ya z
 
 -- | Submits a request to the specified lightning-viz server to create a plot
 -- to visualize one-dimensional series.

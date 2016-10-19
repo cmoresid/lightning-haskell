@@ -56,7 +56,9 @@ instance ToJSON AdjacencyPlot where
               ]
 
 instance ValidatablePlot AdjacencyPlot where
-  validatePlot = return
+  validatePlot (AdjacencyPlot conn lbls grp srt nbrs sym) = do
+    conn' <- validateConn conn
+    return $ AdjacencyPlot conn' lbls grp srt nbrs sym
 
 -- | Submits a request to the specified lightning-viz server to create
 -- a sparse adjacency matrix visualiazation.

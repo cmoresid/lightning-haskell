@@ -48,7 +48,10 @@ instance ToJSON MatrixPlot where
               ]
 
 instance ValidatablePlot MatrixPlot where
-  validatePlot = return
+  validatePlot (MatrixPlot mtx rlbl clbl cm nbr) = do
+    mtx' <- validateConn mtx
+    cm' <- validateColorMap cm
+    return $ MatrixPlot mtx' rlbl clbl cm' nbr
 
 -- | Submits a request to the specified lightning-viz server to create a
 -- heat map of the given matrix.

@@ -175,8 +175,8 @@ validateAlpha alpha = validateGreaterThan0 alpha msg
   where msg = "Alpha cannot be 0 or negative."
 
 -- | Verify all thickness values are greater than 0.
-validateThickness :: Maybe [Double]
-                  -> Either LightningError (Maybe [Double])
+validateThickness :: Maybe [Int]
+                  -> Either LightningError (Maybe [Int])
 validateThickness thickness = validateGreaterThan0 thickness msg
   where msg = "Thickness cannot be 0 or negative."
 
@@ -217,17 +217,16 @@ validateCoordinates3 xs ys zs =
 --
 -- 2 letter region names must correspond to US states and 3 letter
 -- region names must correspond to countries of the world.
-validateRegion :: Maybe [T.Text]
-               -> Either LightningError (Maybe [T.Text])
-validateRegion regions@(Just rs) =
+validateRegion :: [T.Text]
+               -> Either LightningError [T.Text]
+validateRegion regions =
   if checkTwo || checkThree
     then Right regions
     else Left $ ValidationError msg
   where
     msg = "All region names must be all 2 letters or all 3 letters."
-    checkTwo = all (\x -> T.length x == 2) rs
-    checkThree = all (\x -> T.length x == 3) rs
-validateRegion Nothing = Right Nothing
+    checkTwo = all (\x -> T.length x == 2) regions
+    checkThree = all (\x -> T.length x == 3) regions
 
 -- | Verify that the multi-dimensional list adheres to expected dimensions.
 validateConn :: [[Double]]

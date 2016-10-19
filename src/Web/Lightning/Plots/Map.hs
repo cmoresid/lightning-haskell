@@ -44,7 +44,10 @@ instance ToJSON MapPlot where
               ]
 
 instance ValidatablePlot MapPlot where
-  validatePlot = return
+  validatePlot (MapPlot r v cm) = do
+    r' <- validateRegion r
+    cm' <- validateColorMap cm
+    return $ MapPlot r' v cm'
 
 -- | Submits a request to the specified lightning-viz server to create a
 -- chloropleth map of the world or united states.

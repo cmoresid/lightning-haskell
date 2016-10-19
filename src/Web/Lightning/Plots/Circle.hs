@@ -51,7 +51,10 @@ instance ToJSON CirclePlot where
               ]
 
 instance ValidatablePlot CirclePlot where
-  validatePlot = return
+  validatePlot (CirclePlot conn grp cs lbl) = do
+    conn' <- validateConn conn
+    cs' <- validateColor cs
+    return $ CirclePlot conn' grp cs' lbl
 
 -- | Submits a request to the specified lightning-viz server to create
 -- a scatter plot.
