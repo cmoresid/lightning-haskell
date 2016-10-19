@@ -23,6 +23,7 @@ module Web.Lightning
   , runResumeLightningtWith
   -- * Client configuration
   , defaultLightningOptions
+  , setBaseURL
   , setSessionName
   , setSessionId
   , setBasicAuth
@@ -87,6 +88,14 @@ instance Default LightningOptions where
 -- | Defines the default lightning-viz options.
 defaultLightningOptions :: LightningOptions
 defaultLightningOptions = def
+
+-- | Sets the base URL of Lightning's API in the given
+-- 'LightningOptions' record.
+setBaseURL :: T.Text
+           -- ^ Fully qualified API base URL
+           -> LightningOptions
+           -> LightningOptions
+setBaseURL url opts = opts { optHostUrl = url }
 
 -- | Sets the name of the session that is nested in the
 -- given 'LightningOptions' record.
