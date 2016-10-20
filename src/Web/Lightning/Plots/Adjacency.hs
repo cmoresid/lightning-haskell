@@ -15,7 +15,7 @@ import           Data.Default.Class
 import qualified Data.Text                         as T
 
 import qualified Web.Lightning.Routes              as R
-import           Web.Lightning.Types.Lightning     (LightningT, sendPlot)
+import           Web.Lightning.Types.Lightning
 import           Web.Lightning.Types.Visualization (Visualization (..))
 import           Web.Lightning.Utilities
 --------------------------------------------------------------------------------
@@ -54,6 +54,11 @@ instance ToJSON AdjacencyPlot where
               , "symmetric" .= sym
               , "srt"       .= srt
               ]
+
+instance ValidatablePlot AdjacencyPlot where
+  validatePlot (AdjacencyPlot conn lbls grp srt nbrs sym) = do
+    conn' <- validateConn conn
+    return $ AdjacencyPlot conn' lbls grp srt nbrs sym
 
 -- | Submits a request to the specified lightning-viz server to create
 -- a sparse adjacency matrix visualiazation.

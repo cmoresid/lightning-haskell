@@ -15,7 +15,7 @@ import           Data.Default.Class
 import qualified Data.Text                         as T
 
 import qualified Web.Lightning.Routes              as R
-import           Web.Lightning.Types.Lightning     (LightningT, sendPlot)
+import           Web.Lightning.Types.Lightning
 import           Web.Lightning.Types.Visualization (Visualization (..))
 import           Web.Lightning.Utilities
 --------------------------------------------------------------------------------
@@ -46,6 +46,12 @@ instance ToJSON MatrixPlot where
               , "colormap"  .= cm
               , "numbers"   .= nbrs
               ]
+
+instance ValidatablePlot MatrixPlot where
+  validatePlot (MatrixPlot mtx rlbl clbl cm nbr) = do
+    mtx' <- validateConn mtx
+    cm' <- validateColorMap cm
+    return $ MatrixPlot mtx' rlbl clbl cm' nbr
 
 -- | Submits a request to the specified lightning-viz server to create a
 -- heat map of the given matrix.

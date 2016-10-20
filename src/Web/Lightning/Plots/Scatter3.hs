@@ -15,9 +15,9 @@ import           Data.Text                         as T
 import           Data.Default.Class
 
 import qualified Web.Lightning.Routes              as R
-import           Web.Lightning.Types.Lightning     (LightningT, sendPlot)
+import           Web.Lightning.Types.Lightning
 import           Web.Lightning.Types.Visualization (Visualization (..))
-import           Web.Lightning.Utilities           (omitNulls, getPoints3)
+import           Web.Lightning.Utilities
 --------------------------------------------------------------------------------
 
 -- | Scatter Plot 3D parameters
@@ -50,6 +50,15 @@ instance ToJSON Scatter3Plot where
               , "size"      .= ss
               , "alpha"     .= as
               ]
+
+instance ValidatablePlot Scatter3Plot where
+  validatePlot (Scatter3Plot xs ys zs c g s a) = do
+    (xs', ys', zs') <- validateCoordinates3 xs ys zs
+    c' <- validateColor c
+    s' <- validateSize s
+    a' <- validateAlpha a
+    return $ Scatter3Plot xs' ys' zs' c' g s' a'
+
 -- | Submits a request to the specified lightning-viz server to create
 -- a 3D scatter plot.
 --

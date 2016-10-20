@@ -15,7 +15,7 @@ import           Data.Default.Class
 import qualified Data.Text                         as T
 
 import qualified Web.Lightning.Routes              as R
-import           Web.Lightning.Types.Lightning     (LightningT, sendPlot)
+import           Web.Lightning.Types.Lightning
 import           Web.Lightning.Types.Visualization (Visualization (..))
 import           Web.Lightning.Utilities
 --------------------------------------------------------------------------------
@@ -67,6 +67,14 @@ instance ToJSON ForcePlot where
               , "zoom"      .= z
               , "brush"     .= b
               ]
+
+instance ValidatablePlot ForcePlot where
+  validatePlot (ForcePlot conn vl lbl c grp cm s tt z b) = do
+    conn' <- validateConn conn
+    c' <- validateColor c
+    cm' <- validateColorMap cm
+    s' <- validateSize s
+    return $ ForcePlot conn' vl lbl c' grp cm' s' tt z b
 
 -- | Submits a request to the specified lightning-viz server to create a
 -- force-directed network visualization from connectivity.

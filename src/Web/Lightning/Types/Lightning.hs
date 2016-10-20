@@ -18,9 +18,11 @@ module Web.Lightning.Types.Lightning
     Lightning
   , LightningF(..)
   , LightningT(..)
+  , ValidatablePlot(..)
     -- * Lightning Actions
   , runRoute
   , sendPlot
+  , sendJSON
   , receiveRoute
   , withBaseURL
   , failWith
@@ -40,6 +42,10 @@ import           Network.API.Builder       hiding (runRoute)
 import           Web.Lightning.Types.Error
 import           Web.Lightning.Utilities
 --------------------------------------------------------------------------------
+
+-- | Allows plot fields to be validated.
+class ValidatablePlot a where
+  validatePlot :: a -> Either LightningError a
 
 -- | Represents an IO Lightning transformer action.
 type Lightning a = LightningT IO a
@@ -78,7 +84,7 @@ runRoute :: (FromJSON a, Monad m) => Route
 runRoute r = LightningT $ liftF $ RunRoute r id
 
 -- | Sends a request to the lightning-viz server to create a visualization.
-sendPlot :: (ToJSON p, Receivable a, Monad m) => T.Text
+sendPlot :: (ToJSON p, ValidatablePlot p, Receivable a, Monad m) => T.Text
                                                  -- ^ The plot type
                                               -> p
                                                  -- ^ The plot creation request
@@ -86,7 +92,19 @@ sendPlot :: (ToJSON p, Receivable a, Monad m) => T.Text
                                                  -- ^ The plot route.
                                               -> LightningT m a
                                                  -- ^ Monad transformer stack with result.
-sendPlot t p r = LightningT $ liftF $ SendJSON (createPayLoad t $ toJSON p) r id
+sendPlot t p r =
+  case validatePlot p of
+    Left err -> failWith (APIError err)
+    Right p' -> sendJSON (createPayLoad t $ toJSON p') r
+
+-- | Sends a request containing JSON to the specified route.
+sendJSON :: (Receivable a, Monad m) => Value
+                                       -- ^ The JSON payload
+                                    -> Route
+                                       -- ^ Route to send request to
+                                    -> LightningT m a
+                                       -- ^ Monad transformer stack with result.
+sendJSON j r = LightningT $ liftF $ SendJSON j r id
 
 -- | Send and receives a GET request to the specified route.
 receiveRoute :: (Receivable a, Monad m) => Route

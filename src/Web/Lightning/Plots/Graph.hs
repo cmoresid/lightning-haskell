@@ -15,7 +15,7 @@ import           Data.Default.Class
 import qualified Data.Text                         as T
 
 import qualified Web.Lightning.Routes              as R
-import           Web.Lightning.Types.Lightning     (LightningT, sendPlot)
+import           Web.Lightning.Types.Lightning
 import           Web.Lightning.Types.Visualization (Visualization (..))
 import           Web.Lightning.Utilities
 --------------------------------------------------------------------------------
@@ -71,6 +71,15 @@ instance ToJSON GraphPlot where
               , "zoom" .= z
               , "brush" .= b
               ]
+
+instance ValidatablePlot GraphPlot where
+  validatePlot (GraphPlot xs ys conn vl lbl c g cm s tt z b) = do
+    (xs', ys') <- validateCoordinates xs ys
+    conn' <- validateConn conn
+    c' <- validateColor c
+    cm' <- validateColorMap cm
+    s' <- validateSize s
+    return $ GraphPlot xs' ys' conn' vl lbl c' g cm' s' tt z b
 
 -- | Submits a request to the specified lightning-viz server to create a
 -- node-link graph from spatial points and their connectivity.

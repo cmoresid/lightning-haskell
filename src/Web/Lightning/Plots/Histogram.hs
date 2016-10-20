@@ -15,9 +15,9 @@ import           Data.Default.Class
 import qualified Data.Text                         as T
 
 import qualified Web.Lightning.Routes              as R
-import           Web.Lightning.Types.Lightning     (LightningT, sendPlot)
+import           Web.Lightning.Types.Lightning
 import           Web.Lightning.Types.Visualization (Visualization (..))
-import           Web.Lightning.Utilities           (omitNulls)
+import           Web.Lightning.Utilities
 --------------------------------------------------------------------------------
 
 -- | Histogram plot parameters
@@ -37,6 +37,11 @@ instance ToJSON HistogramPlot where
               , "bins"   .= bs
               , "zoom"   .= z
               ]
+
+instance ValidatablePlot HistogramPlot where
+  validatePlot (HistogramPlot v b z) = do
+    b' <- validateBin b
+    return $ HistogramPlot v b' z
 
 -- | Submits a request to the specified lightning-viz server to create a plot
 -- to histogram.

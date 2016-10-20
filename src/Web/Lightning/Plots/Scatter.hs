@@ -15,9 +15,9 @@ import           Data.Default.Class
 import qualified Data.Text                         as T
 
 import qualified Web.Lightning.Routes              as R
-import           Web.Lightning.Types.Lightning     (LightningT, sendPlot)
+import           Web.Lightning.Types.Lightning
 import           Web.Lightning.Types.Visualization (Visualization (..))
-import           Web.Lightning.Utilities           (getPoints, omitNulls)
+import           Web.Lightning.Utilities
 --------------------------------------------------------------------------------
 
 -- | Scatter plot parameters
@@ -36,7 +36,7 @@ data ScatterPlot =
                 -- ^ List to set colors via groups.
               , spColorMap :: Maybe T.Text
                 -- ^ Specification of color map; only colorbrewer types supported.
-              , spSize     :: Maybe [Double]
+              , spSize     :: Maybe [Int]
                 -- ^ List to set point sizes.
               , spAlpha    :: Maybe [Double]
                 -- ^ List of alpha values to set file and stroke opacity.
@@ -73,6 +73,15 @@ instance ToJSON ScatterPlot where
               , "zoom"      .= z
               , "brush"     .= b
               ]
+
+instance ValidatablePlot ScatterPlot where
+  validatePlot (ScatterPlot xs ys v lbl c grp cm s a xa ya tt z b) = do
+    (xs', ys') <- validateCoordinates xs ys
+    c' <- validateColor c
+    cm' <- validateColorMap cm
+    s' <- validateSize s
+    a' <- validateAlpha a
+    return $ ScatterPlot xs' ys' v lbl c' grp cm' s' a' xa ya tt z b
 
 -- | Submits a request to the specified lightning-viz server to create
 -- a scatter plot.

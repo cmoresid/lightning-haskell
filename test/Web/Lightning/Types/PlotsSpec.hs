@@ -8,6 +8,13 @@ import           Data.Aeson
 import           Data.Maybe
 
 import           Web.Lightning.Plots
+import           Web.Lightning.Types.Lightning (validatePlot)
+
+isRight :: Either a b -> Bool
+isRight = const False `either` const True
+
+isLeft :: Either a b -> Bool
+isLeft = const True `either` const False
 
 main :: IO ()
 main = hspec spec
@@ -45,3 +52,62 @@ spec = do
     it "encodes default GraphPlot property names" $ do
       let testInput = def { gpX = [1,2,3], gpY = [4,5,6], gpConn = [[1,2,3],[4,5,6],[7,8,9]] } :: GraphPlot
         in encode testInput `shouldBe` "{\"tooltips\":true,\"zoom\":true,\"links\":[[0,0,1],[0,1,2],[0,2,3],[1,0,4],[1,1,5],[1,2,6],[2,0,7],[2,1,8],[2,2,9]],\"nodes\":[[1,4],[2,5],[3,6]],\"brush\":true}"
+
+  describe "Lighting Plot Validation" $ do
+    it "should be IsRight for valid AdjacencyPlot." $ do
+      let testInput = validatePlot $ def { apConn = [[1,2,3],[4,5,6],[7,8,9]] }
+        in testInput `shouldSatisfy` isRight
+    it "should be IsLeft for invalid AdjacencyPlot." $ do
+      let testInput = validatePlot $ def { apConn = [[], [1,2,3,4]] }
+        in testInput `shouldSatisfy` isLeft
+    it "should be IsRight for valid CirclePlot." $ do
+      let testInput = validatePlot $ def { apConn = [[1,2],[3,4]] }
+        in testInput `shouldSatisfy` isRight
+    it "should be IsLeft for invalid CirclePlot." $ do
+      let testInput = validatePlot $ def { cpConn = [[1,2],[3,4]], cpColor = Just [1,2] }
+        in testInput `shouldSatisfy` isLeft
+    it "should be IsRight for valid ForcePlot." $ do
+      let testInput = validatePlot $ def { fpConn = [[1,2,3],[1,2,3],[1,2,3]], fpBrush = Just False }
+        in testInput `shouldSatisfy` isRight
+    it "should be IsLeft for invalid ForcePlot." $ do
+      let testInput = validatePlot $ def { fpConn = [[], [1.0]] }
+        in testInput `shouldSatisfy` isLeft
+    it "should be IsRight for valid GraphPlot." $ do
+      let testInput = validatePlot $ def { gpX = [1], gpY = [1], gpConn = [[1,2,3]] }
+        in testInput `shouldSatisfy` isRight
+    it "should be IsLeft for invalid GraphPlot." $ do
+      let testInput = validatePlot $ def { gpX = [1], gpY = [1,2,3], gpConn = [[1,2,3]] }
+        in testInput `shouldSatisfy` isLeft
+    it "should be IsRight for HistogramPlot." $ do
+      let testInput = validatePlot $ def { hpValues = [1,2,1,1,1,4], hpBins = Just [1,2,3] }
+        in testInput `shouldSatisfy` isRight
+    it "should be IsRight for valid LinePlot." $ do
+      let testInput = validatePlot $ def { lpSeries = [[1,2,3]], lpColor = Just [244,0,100] }
+        in testInput `shouldSatisfy` isRight
+    it "should be IsLeft for invalid LinePlot." $ do
+      let testInput = validatePlot $ def { lpSeries = [[1,2,3,4]], lpColor = Just [0] }
+        in testInput `shouldSatisfy` isLeft
+    it "should be IsRight for valid MapPlot." $ do
+      let testInput = validatePlot $ def { mppRegions = ["USA","CAN"], mppWeights = [0.2,1.3] }
+        in testInput `shouldSatisfy` isRight
+    it "should be IsLeft for invalid MapPlot." $ do
+      let testInput = validatePlot $ def { mppRegions = ["USA","CAN", "AL"], mppWeights = [0.2,1.3] }
+        in testInput `shouldSatisfy` isLeft
+    it "should be IsRight for valid MatrixPlot." $ do
+      let testInput = validatePlot $ def { mpMatrix = [[1,2,3],[4,5,6]] }
+        in testInput `shouldSatisfy` isRight
+    it "should be IsLeft for invalid MatrixPlot." $ do
+      let testInput = validatePlot $ def { mpMatrix = [[1,2,3],[4,5,6],[7,8,9]], mpColorMap = Just "NotAColorMap" }
+        in testInput `shouldSatisfy` isLeft
+    it "should be IsRight for valid ScatterPlot." $ do
+      let testInput = validatePlot $ def { spX = [1,2,3], spY = [1,2,3] }
+        in testInput `shouldSatisfy` isRight
+    it "should be IsLeft for invalid ScatterPlot." $ do
+      let testInput = validatePlot $ def { spX = [1,2,3], spY = [0,0,0], spAlpha = Just [-1,0,1] }
+        in testInput `shouldSatisfy` isLeft
+    it "should be IsRight for valid ScatterPlot3." $ do
+      let testInput = validatePlot $ def { sptX = [1,2,3], sptY = [1,2,3], sptZ = [0,0,0] }
+        in testInput `shouldSatisfy` isRight
+    it "should be IsLeft for invalid ScatterPlot3." $ do
+      let testInput = validatePlot $ def { sptX = [1,2,3], sptY = [0,0,0], sptZ = [1,2,3,4] }
+        in testInput `shouldSatisfy` isLeft
