@@ -21,6 +21,7 @@ module Web.Lightning
   , runLightning
   , runLightningWith
   , runResumeLightningtWith
+  , interpretIO
   -- * Client configuration
   , defaultLightningOptions
   , setBaseURL
