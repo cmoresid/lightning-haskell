@@ -17,6 +17,7 @@ module Web.Lightning.Utilities
     -- * Utility Functions
     omitNulls
   , createPayLoad
+  , createDataPayLoad
   , addSessionId
   , getLinks
   , getNodes
@@ -34,6 +35,7 @@ module Web.Lightning.Utilities
   , validateCoordinates3
   , validateRegion
   , validateConn
+  , defaultBaseURL
   )
   where
 
@@ -61,8 +63,15 @@ createPayLoad :: T.Text
               -> Value
                  -- ^ The plot creation request record in JSON Value format
               -> Value
-                 -- ^ The properly payload object
+                 -- ^ The properly encoded payload object
 createPayLoad t p = object [("type", toJSON t), ("data", p)]
+
+-- | Creates a payload for streaming plots.
+createDataPayLoad :: Value
+                     -- ^ Data to update.
+                  -> Value
+                     -- ^ The properly encoded payload object.
+createDataPayLoad p = object [("data", p)]
 
 -- | Appends the session route and session id to current URL.
 addSessionId :: T.Text
@@ -248,3 +257,7 @@ validateGreaterThan0 vals@(Just vs) msg =
     then Left $ ValidationError msg
     else Right vals
 validateGreaterThan0 Nothing _ = Right Nothing
+
+-- | Defines the default URL for the lightning-viz server.
+defaultBaseURL :: T.Text
+defaultBaseURL = "http://localhost:3000"

@@ -15,6 +15,7 @@ Defines the Route mappings to the lightning-viz API.
 module Web.Lightning.Routes
   ( -- * API Endpoints
     plot
+  , stream
   , publicLink
   )
   where
@@ -31,6 +32,16 @@ plot :: Route
 plot = Route ["visualizations"]
              []
              "POST"
+
+-- | This route is used in conjunction with streaming plot functions.
+stream :: Visualization
+          -- ^ Visualization to append
+       -> Route
+          -- ^ Returns the URL to update the visualization.
+stream (Visualization i _ _) =
+  Route ["visualizations", i, "data"]
+        []
+        "POST"
 
 -- | Corresponds to the public URL of a visualization.
 publicLink :: Visualization

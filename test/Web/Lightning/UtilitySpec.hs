@@ -8,7 +8,6 @@ import           Data.Aeson
 
 import           Web.Lightning.Plots
 import           Web.Lightning.Utilities
-import           Web.Lightning.Types.Lightning(defaultBaseURL)
 
 isRight :: Either a b -> Bool
 isRight = const False `either` const True

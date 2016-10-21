@@ -42,6 +42,12 @@ module Web.Lightning.Plots
     -- * Histogram
   , HistogramPlot(..)
   , histogramPlot
+    -- * Streaming Line Plot
+  , LineStreamPlot(..)
+  , streamingLinePlot
+    -- * Streaming Scatter Plot
+  , ScatterStreamPlot(..)
+  , streamingScatterPlot
 
   , module Data.Default.Class
   )
@@ -60,3 +66,5 @@ import           Web.Lightning.Plots.Circle
 import           Web.Lightning.Plots.Histogram
 import           Web.Lightning.Plots.Scatter
 import           Web.Lightning.Plots.Scatter3
+import           Web.Lightning.Plots.LineStream
+import           Web.Lightning.Plots.ScatterStream

@@ -37,6 +37,8 @@ library
                      , Web.Lightning.Plots.GraphBundled
                      , Web.Lightning.Plots.Scatter3
                      , Web.Lightning.Types.Session
+                     , Web.Lightning.Plots.LineStream
+                     , Web.Lightning.Plots.ScatterStream
   build-depends:       base >= 4.7 && < 5
                      , aeson
                      , blaze-html

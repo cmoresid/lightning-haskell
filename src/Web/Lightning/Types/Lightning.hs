@@ -22,11 +22,11 @@ module Web.Lightning.Types.Lightning
     -- * Lightning Actions
   , runRoute
   , sendPlot
+  , streamPlot
   , sendJSON
   , receiveRoute
   , withBaseURL
   , failWith
-  , defaultBaseURL
   )
   where
 
@@ -41,6 +41,8 @@ import           Data.Aeson
 import           Network.API.Builder       hiding (runRoute)
 import           Web.Lightning.Types.Error
 import           Web.Lightning.Utilities
+import           Web.Lightning.Routes      (stream)
+import           Web.Lightning.Types.Visualization
 --------------------------------------------------------------------------------
 
 -- | Allows plot fields to be validated.
@@ -97,6 +99,31 @@ sendPlot t p r =
     Left err -> failWith (APIError err)
     Right p' -> sendJSON (createPayLoad t $ toJSON p') r
 
+-- | Sends a request to either create a brand new streaming plot or
+-- to append data to an existing streaming plot.
+streamPlot :: (ToJSON p,
+               ValidatablePlot p,
+               Receivable a,
+               Monad m) => Maybe Visualization
+                           -- ^ Visualization to update. If nothing, create
+                           -- a new plot.
+                        -> T.Text
+                           -- ^ Plot type
+                        -> p
+                           -- ^ Plot payload
+                        -> Route
+                           -- ^ Route to send plot to.
+                        -> LightningT m a
+                           -- ^ Monad transformer stack with result.
+streamPlot (Just viz) _ p _ =
+  case validatePlot p of
+    Left err -> failWith (APIError err)
+    Right p' -> sendJSON (createDataPayLoad $ toJSON p') (stream viz)
+streamPlot Nothing t p r =
+  case validatePlot p of
+    Left err -> failWith (APIError err)
+    Right p' -> sendJSON (createPayLoad t $ toJSON p') r
+
 -- | Sends a request containing JSON to the specified route.
 sendJSON :: (Receivable a, Monad m) => Value
                                        -- ^ The JSON payload
@@ -128,7 +155,3 @@ failWith :: Monad m => APIError LightningError
                     -> LightningT m a
                        -- ^ Monad transformer stack with error.
 failWith = LightningT . liftF . FailWith
-
--- | Defines the default URL for the lightning-viz server.
-defaultBaseURL :: T.Text
-defaultBaseURL = "http://localhost:3000"
