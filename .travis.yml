@@ -4,25 +4,53 @@ sudo: false
 # Choose a lightweight base image; we provide our own build tools.
 language: c
 
-# GHC depends on GMP. You can add other dependencies here as well.
+# Caching so the next build will be fast too.
+cache:
+  directories:
+  - $HOME/.ghc
+  - $HOME/.cabal
+  - $HOME/.stack
+  - $(npm config get prefix)/bin/lightning-server
+
+# The different configurations we want to test. We have BUILD=cabal which uses
+# cabal-install, and BUILD=stack which uses Stack. More documentation on each
+# of those below.
+#
+# We set the compiler values here to tell Travis to use a different
+# cache file per set of arguments.
+#
+# If you need to have different apt packages for each combination in the
+# matrix, you can use a line such as:
+#     addons: {apt: {packages: [libfcgi-dev,libgmp-dev]}}
+env:
+    global:
+      - LIGHTNING_VIZ_URL=http://localhost:3000
+      - TRAVIS_NODE_VERSION=6.9.1
+
 addons:
   apt:
     packages:
     - libgmp-dev
 
 before_install:
-# Download and unpack the stack executable
+# Install NodeJS
+- rm -rf ~/.nvm && git clone https://github.com/creationix/nvm.git ~/.nvm && (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`) && source ~/.nvm/nvm.sh && nvm install $TRAVIS_NODE_VERSION
+
+# Install lightning-server
+- npm install -g lightning-server
+
+# Download and unpack stack executable
 - mkdir -p ~/.local/bin
 - export PATH=$HOME/.local/bin:$PATH
 - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
 
-# This line does all of the work: installs GHC if necessary, build the library,
-# executables, and test suites, and runs the test suites. --no-terminal works
-# around some quirks in Travis's terminal implementation.
-script:
-- stack --no-terminal --install-ghc test :test
+install:
+- stack --no-terminal --install-ghc test --only-dependencies
 
-# Caching so the next build will be fast too.
-cache:
-  directories:
-  - $HOME/.stack
+# Start lightning-server before
+before_script:
+- lightning-server &
+- sleep 3
+
+script:
+- stack --no-terminal test --haddock --no-haddock-deps
