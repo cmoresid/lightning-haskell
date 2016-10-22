@@ -62,8 +62,9 @@ spec = do
       res <- run lightning $ scatter3Plot url def { sptX = [1,2,3], sptY = [1,1,1], sptZ = [0,0,0] }
       res `shouldSatisfy` isRight
     it "create Streaming line plot." $ do
-      res <- run lightning $ streamingLinePlot url Nothing def { lspSeries = [[1,2,3]] }
+      res <- run lightning $ streamingLinePlot url def { lspSeries = [[1,2,3]] }
       res `shouldSatisfy` isRight
     it "create Streaming scatter plot." $ do
-      res <- run lightning $ streamingScatterPlot url Nothing def { sspX = [1,2,3], sspY = [1,2,3] }
+      res <- run lightning $ streamingScatterPlot url def { sspX = [1,2,3], sspY = [1,2,3] }
       res `shouldSatisfy` isRight
+  

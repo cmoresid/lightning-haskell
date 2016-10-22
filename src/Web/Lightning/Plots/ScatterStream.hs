@@ -22,41 +22,44 @@ import           Web.Lightning.Utilities
 
 -- | Scatter plot parameters
 data ScatterStreamPlot =
-  ScatterStreamPlot { sspX        :: [Double]
+  ScatterStreamPlot { sspX             :: [Double]
                       -- ^ List of x points.
-                    , sspY        :: [Double]
+                    , sspY             :: [Double]
                       -- ^ List of y points.
-                    , sspValues   :: Maybe [Double]
+                    , sspValues        :: Maybe [Double]
                       -- ^ Values to set node colors via a linear scale.
-                    , sspLabels   :: Maybe [T.Text]
+                    , sspLabels        :: Maybe [T.Text]
                       -- ^ List of text labels to set tooltips.
-                    , sspColor    :: Maybe [Int]
+                    , sspColor         :: Maybe [Int]
                       -- ^ List of rgb values to set colors.
-                    , sspGroup    :: Maybe [Int]
+                    , sspGroup         :: Maybe [Int]
                       -- ^ List to set colors via groups.
-                    , sspColorMap :: Maybe T.Text
+                    , sspColorMap      :: Maybe T.Text
                       -- ^ Specification of color map; only colorbrewer types supported.
-                    , sspSize     :: Maybe [Int]
+                    , sspSize          :: Maybe [Int]
                       -- ^ List to set point sizes.
-                    , sspXaxis    :: Maybe T.Text
+                    , sspXaxis         :: Maybe T.Text
                       -- ^ Label for x-axis.
-                    , sspYaxis    :: Maybe T.Text
+                    , sspYaxis         :: Maybe T.Text
                       -- ^ Label for y-axis.
-                    , sspToolTips :: Maybe Bool
+                    , sspToolTips      :: Maybe Bool
                       -- ^ Whether or not to display tooltips.
-                    , sspZoom     :: Maybe Bool
+                    , sspZoom          :: Maybe Bool
                       -- ^ Whether or not to allow zooming.
-                    , sspBrush    :: Maybe Bool
+                    , sspBrush         :: Maybe Bool
                       -- ^ Whether or not to support brushing.
+                    , sspVisualization :: Maybe Visualization
+                      -- ^ The visualization to update. If Nothing, create
                     }
-  deriving (Show, Eq)
+  deriving (Show)
 
 instance Default ScatterStreamPlot where
   def = ScatterStreamPlot [] [] Nothing Nothing Nothing Nothing Nothing
-          Nothing Nothing Nothing (Just True) (Just True) (Just True)
+          Nothing Nothing Nothing (Just True) (Just True) (Just True) Nothing
+
 
 instance ToJSON ScatterStreamPlot where
-  toJSON (ScatterStreamPlot xs ys vs ls cs gs cm ss xa ya t z b) =
+  toJSON (ScatterStreamPlot xs ys vs ls cs gs cm ss xa ya t z b _) =
     omitNulls [ "points"    .= getPoints xs ys
               , "values"    .= vs
               , "labels"    .= ls
@@ -72,12 +75,12 @@ instance ToJSON ScatterStreamPlot where
               ]
 
 instance ValidatablePlot ScatterStreamPlot where
-  validatePlot (ScatterStreamPlot xs ys v lbl c grp cm s xa ya tt z b) = do
+  validatePlot (ScatterStreamPlot xs ys v lbl c grp cm s xa ya tt z b viz) = do
     (xs', ys') <- validateCoordinates xs ys
     c' <- validateColor c
     cm' <- validateColorMap cm
     s' <- validateSize s
-    return $ ScatterStreamPlot xs' ys' v lbl c' grp cm' s' xa ya tt z b
+    return $ ScatterStreamPlot xs' ys' v lbl c' grp cm' s' xa ya tt z b viz
 
 -- | Create a streaming scatter plot of x and y.
 --
@@ -88,13 +91,10 @@ instance ValidatablePlot ScatterStreamPlot where
 -- <http://lightning-viz.org/visualizations/streaming/ Streaming Scatter Visualization>
 streamingScatterPlot :: Monad m => T.Text
                        -- ^ Base URL for lightning-viz server.
-                    -> Maybe Visualization
-                       -- ^ The visualization to update. If Nothing, create a
-                       -- new plot.
                     -> ScatterStreamPlot
                        -- ^ Scatter plot to create / update.
                     -> LightningT m Visualization
                        -- ^ Transformer stack with created visualization.
-streamingScatterPlot bUrl viz slp = do
-  viz' <- streamPlot viz "scatter-streaming" slp R.plot
+streamingScatterPlot bUrl slp = do
+  viz' <- streamPlot (sspVisualization slp) "scatter-streaming" slp R.plot
   return $ viz' { vizBaseUrl = Just bUrl }

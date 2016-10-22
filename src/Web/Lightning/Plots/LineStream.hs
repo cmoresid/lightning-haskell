@@ -22,35 +22,37 @@ import           Web.Lightning.Utilities
 
 -- | Streaming line plot parameters
 data LineStreamPlot =
-  LineStreamPlot { lspSeries    :: [[Double]]
+  LineStreamPlot { lspSeries        :: [[Double]]
                    -- ^ Input data for line plot, typically n series of lenght m. Can
                    -- also pass a list where each individual series is of different
                    -- lengths.
-                 , lspIndex     :: Maybe [Int]
+                 , lspIndex         :: Maybe [Int]
                    -- ^ Specify the index for the x-axis line plot.
-                 , lspColor     :: Maybe [Int]
+                 , lspColor         :: Maybe [Int]
                    -- ^ Single RGB value or list to set line colors to.
-                 , lspGroup     :: Maybe [Int]
+                 , lspGroup         :: Maybe [Int]
                    -- ^ Single integer or list to set line colors to via group
                    -- assignment.
-                 , lspSize      :: Maybe [Int]
+                 , lspSize          :: Maybe [Int]
                    -- ^ Sets the line thickness
-                 , lspXAxis     :: Maybe T.Text
+                 , lspXAxis         :: Maybe T.Text
                    -- ^ Label for the x axis
-                 , lspYAxis     :: Maybe T.Text
+                 , lspYAxis         :: Maybe T.Text
                    -- ^ Label for the y axis
-                 , lspMaxWidth  :: Maybe Int
+                 , lspMaxWidth      :: Maybe Int
                    -- ^ The maximum number of time points to show before plot shifts.
-                 , lspZoom      :: Maybe Bool
+                 , lspZoom          :: Maybe Bool
+                   -- ^ Whether or not to enable zooming.
+                 , lspVisualization :: Maybe Visualization
                  }
-  deriving (Show, Eq)
+  deriving (Show)
 
 instance Default LineStreamPlot where
   def = LineStreamPlot [[]] Nothing Nothing Nothing Nothing
-          Nothing Nothing Nothing (Just True)
+          Nothing Nothing Nothing (Just True) Nothing
 
 instance ToJSON LineStreamPlot where
-  toJSON (LineStreamPlot ss is cs gs t xa ya mw z) =
+  toJSON (LineStreamPlot ss is cs gs t xa ya mw z _) =
     omitNulls [ "series"    .= ss
               , "index"     .= is
               , "color"     .= cs
@@ -63,24 +65,21 @@ instance ToJSON LineStreamPlot where
               ]
 
 instance ValidatablePlot LineStreamPlot where
-  validatePlot (LineStreamPlot ss i c g s xa ya mw z) = do
+  validatePlot (LineStreamPlot ss i c g s xa ya mw z viz) = do
     i' <- validateIndex i
     c' <- validateColor c
     s' <- validateSize s
-    return $ LineStreamPlot ss i' c' g s' xa ya mw z
+    return $ LineStreamPlot ss i' c' g s' xa ya mw z viz
 
 -- | Plot streaming one-dimensional series data as updating lines.
 --
 -- <http://lightning-viz.org/visualizations/streaming/ Streaming Line Visualization>
 streamingLinePlot :: Monad m => T.Text
                        -- ^ Base URL for lightning-viz server.
-                    -> Maybe Visualization
-                       -- ^ The visualization to update. If Nothing, create a
-                       -- new plot.
                     -> LineStreamPlot
                        -- ^ Line plot to create / update.
                     -> LightningT m Visualization
                        -- ^ Transformer stack with created visualization.
-streamingLinePlot bUrl viz slp = do
-  viz' <- streamPlot viz "line-streaming" slp R.plot
+streamingLinePlot bUrl slp = do
+  viz' <- streamPlot (lspVisualization slp) "line-streaming" slp R.plot
   return $ viz' { vizBaseUrl = Just bUrl }
