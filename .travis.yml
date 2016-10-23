@@ -31,6 +31,11 @@ addons:
   apt:
     packages:
     - libgmp-dev
+    - cabal-install-1.24
+    - happy-1.19.5
+    - alex-3.1.7
+    sources:
+    - hvr-ghc
 
 before_install:
 # Install NodeJS
@@ -53,4 +58,7 @@ before_script:
 - sleep 3
 
 script:
+# Build and test
 - stack --no-terminal test --haddock --no-haddock-deps
+# Make sure sdist can be built
+- stack sdist
