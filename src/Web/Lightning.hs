@@ -38,6 +38,7 @@ module Web.Lightning
 --------------------------------------------------------------------------------
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans.Free
+import           Control.Monad.Trans.Reader
 
 import           Data.Aeson
 import qualified Data.ByteString               as B
@@ -151,26 +152,26 @@ runLightningWith opts lightning =
 interpretIO :: MonadIO m => LightningState
                 -> LightningT m a
                 -> m (Either (APIError LightningError, Maybe (LightningT m a)) a)
-interpretIO lstate (LightningT r) =
-  runFreeT r >>= \case
+interpretIO lstate@(LightningState url _ _ _) (LightningT r) =
+  runFreeT (runReaderT r url) >>= \case
     Pure x -> return $ Right x
     Free (WithBaseURL u x n) ->
       interpretIO (lstate { stCurrentBaseURL = u }) x >>= \case
         Left (err, Just resume) ->
-          return $ Left (err, Just $ resume >>= LightningT . n)
+          return $ Left (err, Just $ resume >>= LightningT . liftLightningF . n)
         Left (err, Nothing) -> return $ Left (err, Nothing)
-        Right res -> interpretIO lstate $ LightningT $ n res
+        Right res -> interpretIO lstate $ LightningT $ (liftLightningF . n) res
     Free (FailWith x) -> return $ Left (x, Nothing)
     Free (RunRoute route n) ->
-      interpretIO lstate $ LightningT $ wrap $ ReceiveRoute route (n . unwrapJSON)
+      interpretIO lstate $ LightningT $ wrap $ ReceiveRoute route (liftLightningF . n . unwrapJSON)
     Free (SendJSON jsonObj route n) ->
       handleSendJSON route lstate jsonObj >>= \case
-        Left err -> return $ Left (err, Just $ LightningT $ wrap $ SendJSON jsonObj route n)
-        Right x -> interpretIO lstate $ LightningT $ n x
+        Left err -> return $ Left (err, Just $ LightningT $ wrap $ SendJSON jsonObj route (liftLightningF . n))
+        Right x -> interpretIO lstate $ LightningT $ (liftLightningF . n) x
     Free (ReceiveRoute route n) ->
       handleReceive route lstate >>= \case
-        Left err -> return $ Left (err, Just $ LightningT $ wrap $ ReceiveRoute route n)
-        Right x -> interpretIO lstate $ LightningT $ n x
+        Left err -> return $ Left (err, Just $ LightningT $ wrap $ ReceiveRoute route (liftLightningF . n))
+        Right x -> interpretIO lstate $ LightningT $ (liftLightningF . n) x
 
 -- | Runs a lightning action using the specified options.
 runResumeLightningtWith :: MonadIO m => LightningOptions
@@ -181,7 +182,7 @@ runResumeLightningtWith (LightningOptions cm hu lm s) lightning = do
     Just m  -> return m
     Nothing -> liftIO $ newManager tlsManagerSettings
   auth <- case lm of
-    Anonymous -> return id
+    Anonymous       -> return id
     BasicAuth creds -> return $ uncurry applyBasicAuth creds
   session <- case s of
     Just s' ->

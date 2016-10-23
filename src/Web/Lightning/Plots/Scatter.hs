@@ -10,6 +10,8 @@ module Web.Lightning.Plots.Scatter
   where
 
 --------------------------------------------------------------------------------
+import           Control.Monad.Reader
+
 import           Data.Aeson
 import           Data.Default.Class
 import qualified Data.Text                         as T
@@ -87,12 +89,11 @@ instance ValidatablePlot ScatterPlot where
 -- a scatter plot.
 --
 -- <http://lightning-viz.org/visualizations/adjacency/ Scatter Visualization>
-scatterPlot :: Monad m => T.Text
-                          -- ^ Base URL for lightning-viz server.
-                       -> ScatterPlot
+scatterPlot :: Monad m => ScatterPlot
                           -- ^ Scatter plot to create.
                        -> LightningT m Visualization
                           -- ^ Transformer stack with created visualization.
-scatterPlot bUrl scatterPlt = do
+scatterPlot scatterPlt = do
+  url <- ask
   viz <- sendPlot "scatter" scatterPlt R.plot
-  return $ viz { vizBaseUrl = Just bUrl }
+  return $ viz { vizBaseUrl = Just url }

@@ -10,6 +10,8 @@ module Web.Lightning.Plots.LineStream
   where
 
 --------------------------------------------------------------------------------
+import           Control.Monad.Reader
+
 import           Data.Aeson
 import           Data.Default.Class
 import qualified Data.Text                         as T
@@ -74,12 +76,11 @@ instance ValidatablePlot LineStreamPlot where
 -- | Plot streaming one-dimensional series data as updating lines.
 --
 -- <http://lightning-viz.org/visualizations/streaming/ Streaming Line Visualization>
-streamingLinePlot :: Monad m => T.Text
-                       -- ^ Base URL for lightning-viz server.
-                    -> LineStreamPlot
-                       -- ^ Line plot to create / update.
-                    -> LightningT m Visualization
-                       -- ^ Transformer stack with created visualization.
-streamingLinePlot bUrl slp = do
-  viz' <- streamPlot (lspVisualization slp) "line-streaming" slp R.plot
-  return $ viz' { vizBaseUrl = Just bUrl }
+streamingLinePlot :: Monad m => LineStreamPlot
+                                -- ^ Line plot to create / update.
+                             -> LightningT m Visualization
+                                -- ^ Transformer stack with created visualization.
+streamingLinePlot slp = do
+  url <- ask
+  viz <- streamPlot (lspVisualization slp) "line-streaming" slp R.plot
+  return $ viz { vizBaseUrl = Just url }

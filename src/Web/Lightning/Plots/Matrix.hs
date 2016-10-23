@@ -10,6 +10,8 @@ module Web.Lightning.Plots.Matrix
   where
 
 --------------------------------------------------------------------------------
+import           Control.Monad.Reader
+
 import           Data.Aeson
 import           Data.Default.Class
 import qualified Data.Text                         as T
@@ -57,12 +59,11 @@ instance ValidatablePlot MatrixPlot where
 -- heat map of the given matrix.
 --
 -- <http://lightning-viz.org/visualizations/matrix/ Matrix Visualization>
-matrixPlot :: Monad m => T.Text
-                         -- ^ Base URL for lightning-viz server.
-                      -> MatrixPlot
+matrixPlot :: Monad m => MatrixPlot
                          -- ^ Matrix plot to create.
                       -> LightningT m Visualization
                          -- ^ Transformer stack with created visualization.
-matrixPlot bUrl matrixPlt = do
+matrixPlot matrixPlt = do
+  url <- ask
   viz <- sendPlot "matrix" matrixPlt R.plot
-  return $ viz { vizBaseUrl = Just bUrl }
+  return $ viz { vizBaseUrl = Just url }

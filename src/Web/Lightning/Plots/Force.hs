@@ -10,6 +10,8 @@ module Web.Lightning.Plots.Force
   where
 
 --------------------------------------------------------------------------------
+import           Control.Monad.Reader
+
 import           Data.Aeson
 import           Data.Default.Class
 import qualified Data.Text                         as T
@@ -80,12 +82,11 @@ instance ValidatablePlot ForcePlot where
 -- force-directed network visualization from connectivity.
 --
 -- <http://lightning-viz.org/visualizations/force/ Force-Directed Network Visualization>
-forcePlot :: Monad m => T.Text
-                        -- ^ Base URL for lightning-viz server.
-                     -> ForcePlot
+forcePlot :: Monad m => ForcePlot
                         -- ^ Force plot to create.
                      -> LightningT m Visualization
                         -- ^ Transformer stack with created visualization.
-forcePlot bUrl forcePlt = do
+forcePlot forcePlt = do
+  url <- ask
   viz <- sendPlot "force" forcePlt R.plot
-  return $ viz { vizBaseUrl = Just bUrl }
+  return $ viz { vizBaseUrl = Just url }

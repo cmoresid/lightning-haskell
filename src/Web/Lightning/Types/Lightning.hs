@@ -27,6 +27,7 @@ module Web.Lightning.Types.Lightning
   , receiveRoute
   , withBaseURL
   , failWith
+  , liftLightningF
   )
   where
 
@@ -34,6 +35,8 @@ module Web.Lightning.Types.Lightning
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Free
+import           Control.Monad.Trans.Reader
+import           Control.Monad.Reader
 import qualified Data.Text                 as T
 
 import           Data.Aeson
@@ -52,6 +55,9 @@ class ValidatablePlot a where
 -- | Represents an IO Lightning transformer action.
 type Lightning a = LightningT IO a
 
+-- | Represents a URL.
+type BaseUrl = T.Text
+
 -- | Defines the available actions
 data LightningF m a where
   FailWith     :: APIError LightningError -> LightningF m a
@@ -68,15 +74,19 @@ instance Functor (LightningF m) where
   fmap f (WithBaseURL u a x) = WithBaseURL u a (fmap f x)
 
 -- | Defines free monad transformer
-newtype LightningT m a = LightningT (FreeT (LightningF m) m a)
-  deriving (Functor, Applicative, Monad)
-
-instance MonadTrans LightningT where
-  lift = LightningT . lift
+newtype LightningT m a = LightningT (ReaderT BaseUrl (FreeT (LightningF m) m) a)
+  deriving (Functor, Applicative, Monad, MonadReader T.Text)
 
 instance MonadIO m => MonadIO (LightningT m) where
   liftIO = LightningT . liftIO
 
+instance MonadTrans LightningT where
+  lift = LightningT . lift . lift
+
+-- | Lifts a 'LightningF' free monad into the ReaderT context.
+liftLightningF :: (Monad m) => FreeT (LightningF m) m a
+               -> ReaderT T.Text (FreeT (LightningF m) m) a
+liftLightningF = lift
 
 -- | Runs a route action within the free monadic transformer context.
 runRoute :: (FromJSON a, Monad m) => Route

@@ -10,6 +10,8 @@ module Web.Lightning.Plots.Adjacency
   where
 
 --------------------------------------------------------------------------------
+import           Control.Monad.Reader
+
 import           Data.Aeson
 import           Data.Default.Class
 import qualified Data.Text                         as T
@@ -22,19 +24,19 @@ import           Web.Lightning.Utilities
 
 -- | Adjacency plot parameters
 data AdjacencyPlot =
-  AdjacencyPlot { apConn   :: [[Double]]
+  AdjacencyPlot { apConn      :: [[Double]]
                   -- ^ Matrix that defines the connectivity of the plot. The
                   -- dimensions of the matrix can be (n, n), (n, 2) or (n, 3).
                   -- Matrix can be binary or continuous valued. Links should
                   -- contain either 2 elements per link (source, target) or
                   -- 3 elements (source, target, value).
-                , apLabels :: Maybe [T.Text]
+                , apLabels    :: Maybe [T.Text]
                   -- ^ Text labels for each item (will label rows and columns).
-                , apGroup  :: Maybe [Int]
+                , apGroup     :: Maybe [Int]
                   -- ^ List to set colors via groups.
-                , apSort   :: Maybe T.Text
+                , apSort      :: Maybe T.Text
                   -- ^ What to sort by; options are "group" or "degree."
-                , apNumbers :: Maybe Bool
+                , apNumbers   :: Maybe Bool
                   -- ^ Whether or not to show numbers on cells.
                 , apSymmetric :: Maybe Bool
                   -- ^ Whether or not to make links symetrical.
@@ -64,12 +66,11 @@ instance ValidatablePlot AdjacencyPlot where
 -- a sparse adjacency matrix visualiazation.
 --
 -- <http://lightning-viz.org/visualizations/adjacency/ Adjacency Visualization>
-adjacencyPlot :: Monad m => T.Text
-                            -- ^ Base URL for lightning-viz server.
-                         -> AdjacencyPlot
+adjacencyPlot :: Monad m => AdjacencyPlot
                             -- ^ Adjacency plot to create.
                          -> LightningT m Visualization
                             -- ^ Transformer stack with created visualization.
-adjacencyPlot bUrl adjPlt = do
+adjacencyPlot adjPlt = do
+  url <- ask
   viz <- sendPlot "adjacency" adjPlt R.plot
-  return $ viz { vizBaseUrl = Just bUrl }
+  return $ viz { vizBaseUrl = Just url }

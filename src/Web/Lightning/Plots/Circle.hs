@@ -8,6 +8,8 @@ module Web.Lightning.Plots.Circle
   ) where
 
 --------------------------------------------------------------------------------
+import           Control.Monad.Reader
+
 import           Data.Aeson
 import           Data.Default.Class
 import qualified Data.Text                         as T
@@ -60,12 +62,11 @@ instance ValidatablePlot CirclePlot where
 -- a scatter plot.
 --
 -- <http://lightning-viz.org/visualizations/circle/ Circle Visualization>
-circlePlot :: Monad m => T.Text
-                          -- ^ Base URL for lightning-viz server.
-                      -> CirclePlot
+circlePlot :: Monad m => CirclePlot
                         -- ^ Circle plot to create.
                       -> LightningT m Visualization
                         -- ^ Transformer stack with created visualization.
-circlePlot bUrl circlePlt = do
+circlePlot circlePlt = do
+  url <- ask
   viz <- sendPlot "circle" circlePlt R.plot
-  return $ viz { vizBaseUrl = Just bUrl }
+  return $ viz { vizBaseUrl = Just url }

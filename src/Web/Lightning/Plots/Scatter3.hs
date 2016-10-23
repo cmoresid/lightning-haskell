@@ -10,8 +10,9 @@ module Web.Lightning.Plots.Scatter3
   where
 
 --------------------------------------------------------------------------------
+import           Control.Monad.Reader
+
 import           Data.Aeson
-import           Data.Text                         as T
 import           Data.Default.Class
 
 import qualified Web.Lightning.Routes              as R
@@ -63,12 +64,11 @@ instance ValidatablePlot Scatter3Plot where
 -- a 3D scatter plot.
 --
 -- <http://lightning-viz.org/visualizations/scatter-3/ Scatter Visualization>
-scatter3Plot :: Monad m => T.Text
-                           -- ^ Base URL for lightning-viz server.
-                        -> Scatter3Plot
+scatter3Plot :: Monad m => Scatter3Plot
                            -- ^ Scatter plot to create
                         -> LightningT m Visualization
                            -- ^ Transformer stack with created visualization.
-scatter3Plot bUrl scatter3Plt = do
+scatter3Plot scatter3Plt = do
+  url <- ask
   viz <- sendPlot "scatter-3" scatter3Plt R.plot
-  return $ viz { vizBaseUrl = Just bUrl }
+  return $ viz { vizBaseUrl = Just url }

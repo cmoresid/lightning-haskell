@@ -10,6 +10,8 @@ module Web.Lightning.Plots.Graph
   where
 
 --------------------------------------------------------------------------------
+import           Control.Monad.Reader
+
 import           Data.Aeson
 import           Data.Default.Class
 import qualified Data.Text                         as T
@@ -83,12 +85,11 @@ instance ValidatablePlot GraphPlot where
 
 -- | Submits a request to the specified lightning-viz server to create a
 -- node-link graph from spatial points and their connectivity.
-graphPlot :: Monad m => T.Text
-                        -- ^ Base URL for lightning-viz server.
-                     -> GraphPlot
+graphPlot :: Monad m => GraphPlot
                         -- ^ Graph plot to create.
                      -> LightningT m Visualization
                         -- ^ Transformer stack with created visualization.
-graphPlot bUrl graphPlt = do
+graphPlot graphPlt = do
+  url <- ask
   viz <- sendPlot "graph" graphPlt R.plot
-  return $ viz { vizBaseUrl = Just bUrl }
+  return $ viz { vizBaseUrl = Just url }

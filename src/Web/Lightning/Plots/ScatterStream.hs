@@ -10,6 +10,8 @@ module Web.Lightning.Plots.ScatterStream
   where
 
 --------------------------------------------------------------------------------
+import           Control.Monad.Reader
+
 import           Data.Aeson
 import           Data.Default.Class
 import qualified Data.Text                         as T
@@ -89,12 +91,11 @@ instance ValidatablePlot ScatterStreamPlot where
 -- to highlight the most recent data and fade old data away.
 --
 -- <http://lightning-viz.org/visualizations/streaming/ Streaming Scatter Visualization>
-streamingScatterPlot :: Monad m => T.Text
-                       -- ^ Base URL for lightning-viz server.
-                    -> ScatterStreamPlot
-                       -- ^ Scatter plot to create / update.
-                    -> LightningT m Visualization
-                       -- ^ Transformer stack with created visualization.
-streamingScatterPlot bUrl slp = do
+streamingScatterPlot :: Monad m => ScatterStreamPlot
+                                   -- ^ Scatter plot to create / update.
+                                -> LightningT m Visualization
+                                   -- ^ Transformer stack with created visualization.
+streamingScatterPlot slp = do
+  url <- ask
   viz' <- streamPlot (sspVisualization slp) "scatter-streaming" slp R.plot
-  return $ viz' { vizBaseUrl = Just bUrl }
+  return $ viz' { vizBaseUrl = Just url }

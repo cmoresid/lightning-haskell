@@ -10,6 +10,8 @@ module Web.Lightning.Plots.Line
   where
 
 --------------------------------------------------------------------------------
+import           Control.Monad.Reader
+
 import           Data.Aeson
 import           Data.Default.Class
 import qualified Data.Text                         as T
@@ -70,12 +72,11 @@ instance ValidatablePlot LinePlot where
 -- to visualize one-dimensional series.
 --
 -- <http://lightning-viz.org/visualizations/line/ Line Visualization>
-linePlot :: Monad m => T.Text
-                       -- ^ Base URL for lightning-viz server.
-                    -> LinePlot
+linePlot :: Monad m => LinePlot
                        -- ^ Line plot to create.
                     -> LightningT m Visualization
                        -- ^ Transformer stack with created visualization.
-linePlot bUrl linePlt = do
+linePlot linePlt = do
+  url <- ask
   viz <- sendPlot "line" linePlt R.plot
-  return $ viz { vizBaseUrl = Just bUrl }
+  return $ viz { vizBaseUrl = Just url }
