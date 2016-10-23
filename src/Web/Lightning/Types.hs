@@ -15,6 +15,7 @@ module Web.Lightning.Types
     -- * Lightning Types
     LightningError(..)
   , Session(..)
+  , Visualization(..)
   , Pixel
   , Img
   )
@@ -23,8 +24,9 @@ module Web.Lightning.Types
 --------------------------------------------------------------------------------
 import           Data.Word
 
-import           Web.Lightning.Types.Error   (LightningError (..))
-import           Web.Lightning.Types.Session (Session (..))
+import           Web.Lightning.Types.Error         (LightningError (..))
+import           Web.Lightning.Types.Session       (Session (..))
+import           Web.Lightning.Types.Visualization (Visualization (..))
 --------------------------------------------------------------------------------
 
 -- | Can represent an RGBA [red, green, blue, alpha],

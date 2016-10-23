@@ -59,7 +59,7 @@ instance ValidatablePlot CirclePlot where
     return $ CirclePlot conn' grp cs' lbl
 
 -- | Submits a request to the specified lightning-viz server to create
--- a scatter plot.
+-- a circular graph from connectivity data.
 --
 -- <http://lightning-viz.org/visualizations/circle/ Circle Visualization>
 circlePlot :: Monad m => CirclePlot
