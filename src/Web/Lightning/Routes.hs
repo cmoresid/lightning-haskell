@@ -22,6 +22,7 @@ module Web.Lightning.Routes
 
 --------------------------------------------------------------------------------
 import           Network.API.Builder               hiding (runRoute)
+
 import           Web.Lightning.Types.Visualization (Visualization (..))
 --------------------------------------------------------------------------------
 

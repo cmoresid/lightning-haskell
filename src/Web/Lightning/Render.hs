@@ -20,6 +20,7 @@ import           Network.HTTP.Client
 import           Network.HTTP.Client.TLS
 
 import qualified Text.Blaze.Html                   as BZ
+
 import           Web.Lightning.Types.Visualization (Visualization (..),
                                                     getPublicLink)
 --------------------------------------------------------------------------------

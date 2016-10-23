@@ -20,9 +20,12 @@ module Web.Lightning.Types
   )
   where
 
+--------------------------------------------------------------------------------
+import           Data.Word
+
 import           Web.Lightning.Types.Error   (LightningError (..))
 import           Web.Lightning.Types.Session (Session (..))
-import           Data.Word
+--------------------------------------------------------------------------------
 
 -- | Can represent an RGBA [red, green, blue, alpha],
 -- RGB [red, green, blue], and GreyScale [intensity] pixel.

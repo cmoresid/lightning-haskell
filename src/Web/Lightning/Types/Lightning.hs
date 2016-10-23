@@ -33,19 +33,18 @@ module Web.Lightning.Types.Lightning
 
 --------------------------------------------------------------------------------
 import           Control.Monad.IO.Class
-import           Control.Monad.Trans.Class
-import           Control.Monad.Trans.Free
-import           Control.Monad.Trans.Reader
 import           Control.Monad.Reader
-import qualified Data.Text                 as T
+import           Control.Monad.Trans.Free
 
 import           Data.Aeson
+import qualified Data.Text                         as T
 
-import           Network.API.Builder       hiding (runRoute)
+import           Network.API.Builder               hiding (runRoute)
+
+import           Web.Lightning.Routes              (stream)
 import           Web.Lightning.Types.Error
-import           Web.Lightning.Utilities
-import           Web.Lightning.Routes      (stream)
 import           Web.Lightning.Types.Visualization
+import           Web.Lightning.Utilities
 --------------------------------------------------------------------------------
 
 -- | Allows plot fields to be validated.
@@ -125,14 +124,13 @@ streamPlot :: (ToJSON p,
                            -- ^ Route to send plot to.
                         -> LightningT m a
                            -- ^ Monad transformer stack with result.
-streamPlot (Just viz) _ p _ =
+streamPlot viz t p r =
   case validatePlot p of
     Left err -> failWith (APIError err)
-    Right p' -> sendJSON (createDataPayLoad $ toJSON p') (stream viz)
-streamPlot Nothing t p r =
-  case validatePlot p of
-    Left err -> failWith (APIError err)
-    Right p' -> sendJSON (createPayLoad t $ toJSON p') r
+    Right _  -> streamOrCreate viz
+  where
+    streamOrCreate (Just viz') = sendJSON (createDataPayLoad $ toJSON p) (stream viz')
+    streamOrCreate Nothing = sendJSON (createPayLoad t $ toJSON p) r
 
 -- | Sends a request containing JSON to the specified route.
 sendJSON :: (Receivable a, Monad m) => Value

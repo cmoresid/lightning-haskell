@@ -20,9 +20,8 @@ module Web.Lightning.Session
   ) where
 
 --------------------------------------------------------------------------------
-import qualified Data.Text                     as T
-
 import           Data.Maybe
+import qualified Data.Text                     as T
 
 import           Network.API.Builder           hiding (runRoute)
 

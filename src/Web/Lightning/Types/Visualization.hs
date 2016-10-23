@@ -30,6 +30,7 @@ import           Data.Aeson
 import qualified Data.Text                     as T
 
 import           Network.API.Builder           hiding (runRoute)
+
 import           Web.Lightning.Utilities       (defaultBaseURL)
 --------------------------------------------------------------------------------
 
