@@ -42,6 +42,9 @@ module Web.Lightning.Plots
     -- * Histogram
   , HistogramPlot(..)
   , histogramPlot
+    -- * Volume
+  , VolumePlot(..)
+  , volumePlot
     -- * Streaming Line Plot
   , LineStreamPlot(..)
   , streamingLinePlot
@@ -68,3 +71,4 @@ import           Web.Lightning.Plots.Scatter
 import           Web.Lightning.Plots.Scatter3
 import           Web.Lightning.Plots.LineStream
 import           Web.Lightning.Plots.ScatterStream
+import           Web.Lightning.Plots.Volume
