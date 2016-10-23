@@ -1,6 +1,6 @@
 name:                lightning-haskell
 version:             0.1.0.0
-synopsis:            Bindings to lightning-viz REST API
+synopsis:            Haskell client for lightning-viz REST API
 description:         Please see README.md
 homepage:            https://github.com/cmoresid/lightning-haskell#readme
 license:             BSD3
@@ -8,7 +8,9 @@ license-file:        LICENSE
 author:              Connor Moreside
 maintainer:          connor@moresi.de
 copyright:           2016 Connor Moreside
-category:            Web
+stability:           experimental
+category:            Web, Visualization
+tested-with:         GHC == 7.10.3, GHC == 8.0.1
 build-type:          Simple
 -- extra-source-files:
 cabal-version:       >=1.10
