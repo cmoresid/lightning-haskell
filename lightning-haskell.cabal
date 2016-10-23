@@ -39,6 +39,7 @@ library
                      , Web.Lightning.Types.Session
                      , Web.Lightning.Plots.LineStream
                      , Web.Lightning.Plots.ScatterStream
+                     , Web.Lightning.Plots.Volume
   build-depends:       base >= 4.7 && < 5
                      , aeson
                      , blaze-html

@@ -15,8 +15,18 @@ module Web.Lightning.Types
     -- * Lightning Types
     LightningError(..)
   , Session(..)
+  , Pixel
+  , Img
   )
   where
 
 import           Web.Lightning.Types.Error   (LightningError (..))
 import           Web.Lightning.Types.Session (Session (..))
+import           Data.Word
+
+-- | Can represent an RGBA [red, green, blue, alpha],
+-- RGB [red, green, blue], and GreyScale [intensity] pixel.
+type Pixel = [Word8]
+
+-- | Represents an image as a matrix of pixels.
+type Img = [[Pixel]]
