@@ -53,4 +53,9 @@ before_script:
 - sleep 3
 
 script:
+# Build and test
 - stack --no-terminal test --haddock --no-haddock-deps
+# Ensure initial checks pass
+- cabal check
+# Ensure package can be built
+- cabal sdist
