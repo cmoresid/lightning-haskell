@@ -10,9 +10,10 @@ module Web.Lightning.Plots.Histogram
   where
 
 --------------------------------------------------------------------------------
+import           Control.Monad.Reader
+
 import           Data.Aeson
 import           Data.Default.Class
-import qualified Data.Text                         as T
 
 import qualified Web.Lightning.Routes              as R
 import           Web.Lightning.Types.Lightning
@@ -47,12 +48,11 @@ instance ValidatablePlot HistogramPlot where
 -- to histogram.
 --
 -- <http://lightning-viz.org/visualizations/histogram/ HistogramPlot Visualization>
-histogramPlot :: Monad m => T.Text
-                            -- ^ Base URL for lightning-viz server.
-                         -> HistogramPlot
+histogramPlot :: Monad m => HistogramPlot
                             -- ^ Histogram plot to create.
                          -> LightningT m Visualization
                             -- ^ Transformer stack with created visualization.
-histogramPlot bUrl histPlt = do
+histogramPlot histPlt = do
+  url <- ask
   viz <- sendPlot "histogram" histPlt R.plot
-  return $ viz { vizBaseUrl = Just bUrl }
+  return $ viz { vizBaseUrl = Just url }

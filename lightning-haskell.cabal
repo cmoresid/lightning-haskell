@@ -45,6 +45,7 @@ library
                      , bytestring
                      , data-default-class
                      , free
+                     , mtl
                      , http-client
                      , http-client-tls
                      , http-types

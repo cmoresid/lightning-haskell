@@ -10,6 +10,8 @@ module Web.Lightning.Plots.Map
   where
 
 --------------------------------------------------------------------------------
+import           Control.Monad.Reader
+
 import           Data.Aeson
 import           Data.Default.Class
 import qualified Data.Text                         as T
@@ -53,12 +55,11 @@ instance ValidatablePlot MapPlot where
 -- chloropleth map of the world or united states.
 --
 -- <http://lightning-viz.org/visualizations/map/ Map Visualization>
-mapPlot :: Monad m => T.Text
-                      -- ^ Base URL for lightning-viz server.
-                   -> MapPlot
+mapPlot :: Monad m => MapPlot
                       -- ^ Map plot to create.
                    -> LightningT m Visualization
                       -- ^ Transformer stack with created visualization.
-mapPlot bUrl mapPlt = do
+mapPlot mapPlt = do
+  url <- ask
   viz <- sendPlot "map" mapPlt R.plot
-  return $ viz { vizBaseUrl = Just bUrl }
+  return $ viz { vizBaseUrl = Just url }
