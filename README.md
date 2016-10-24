@@ -1,4 +1,4 @@
-# lightning-haskell      [![Build Status](https://travis-ci.org/cmoresid/lightning-haskell.svg?branch=master)](https://travis-ci.org/cmoresid/lightning-haskell)  
+# lightning-haskell      [![Build Status](https://travis-ci.org/cmoresid/lightning-haskell.svg?branch=master)](https://travis-ci.org/cmoresid/lightning-haskell) [![Hackage](https://img.shields.io/hackage/v/lightning-haskell.svg)](http://hackage.haskell.org/package/lightning-haskell-0.1.0.2)
 
 Haskell client for
 [lightning-viz](http://lightning-viz.org/) server.  
