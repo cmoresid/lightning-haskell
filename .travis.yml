@@ -59,6 +59,6 @@ before_script:
 
 script:
 # Build and test
-- stack --no-terminal test --haddock --no-haddock-deps
+- stack --no-terminal test --flag lightning-haskell:integration --haddock --no-haddock-deps
 # Make sure sdist can be built
 - stack sdist

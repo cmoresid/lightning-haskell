@@ -1,5 +1,5 @@
 name:                lightning-haskell
-version:             0.1.0.2
+version:             0.1.0.3
 synopsis:            Haskell client for lightning-viz REST API
 description:         Please see README.md
 homepage:            https://github.com/cmoresid/lightning-haskell#readme
@@ -15,6 +15,10 @@ build-type:          Simple
 cabal-version:       >=1.10
 description:
     A Haskell client for lightning-viz server. <http://lightning-viz.org/>
+
+flag Integration
+  description: Run integration tests
+  default:     False
 
 library
   hs-source-dirs:      src
@@ -79,6 +83,11 @@ test-suite test
   default-language:    Haskell2010
 
 test-suite test-integration
+  if flag(integration)
+    buildable: True
+  else
+    buildable: False
+
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test-integration
   main-is:             Spec.hs
